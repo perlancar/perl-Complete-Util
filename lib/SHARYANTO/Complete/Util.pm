@@ -14,7 +14,7 @@ our @EXPORT_OK = qw(
                        complete_file
                        complete_program
 
-                       parse_bash_cmdline
+                       parse_shell_cmdline
                );
 
 # VERSION
@@ -200,7 +200,7 @@ sub _line_to_argv {
 #    [split(/\h+/, $_[0])];
 #}
 
-$SPEC{parse_bash_cmdline} = {
+$SPEC{parse_shell_cmdline} = {
     v => 1.1,
     summary => 'Parse shell command-line for processing by completion routines',
     description => <<'_',
@@ -237,9 +237,9 @@ _
     },
     result_naked => 1,
 };
-sub parse_bash_cmdline {
+sub parse_shell_cmdline {
     my ($line, $point, $opts) = @_;
-    #$log->tracef("-> parse_bash_cmdline(%s, %s)", $line, $point);
+    #$log->tracef("-> parse_shell_cmdline(%s, %s)", $line, $point);
     $opts //= {};
     $opts->{parse_line_sub} //= \&_line_to_argv;
 
