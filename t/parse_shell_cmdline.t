@@ -60,7 +60,7 @@ is_deeply(
 is_deeply(
     parse_shell_cmdline("foo bar baz qux", 4),
     {words => [qw/baz qux/], cword=>0},
-    "simple 2",
+    "simple 3",
 );
 
 done_testing;
