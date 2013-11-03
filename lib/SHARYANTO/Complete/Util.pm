@@ -3,7 +3,7 @@ package SHARYANTO::Complete::Util;
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any '$log';
+#use Log::Any '$log';
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -200,7 +200,7 @@ sub _line_to_argv {
 #    [split(/\h+/, $_[0])];
 #}
 
-$SPEC{parse_cmdline} = {
+$SPEC{parse_bash_cmdline} = {
     v => 1.1,
     summary => 'Parse shell command-line for processing by completion routines',
     description => <<'_',
@@ -232,19 +232,20 @@ _
 Currently known options: parse_line_sub (code).
 
 _
+            pos => 2,
         },
     },
     result_naked => 1,
 };
 sub parse_bash_cmdline {
     my ($line, $point, $opts) = @_;
-    $log->tracef("-> parse_bash_cmdline(%s, %s)", $line, $point);
+    #$log->tracef("-> parse_bash_cmdline(%s, %s)", $line, $point);
     $opts //= {};
     $opts->{parse_line_sub} //= \&_line_to_argv;
 
     $line  //= $ENV{COMP_LINE};
     $point //= $ENV{COMP_POINT};
-    $log->tracef("line=q(%s), point=%s", $line, $point);
+    #$log->tracef("line=q(%s), point=%s", $line, $point);
 
     my $left  = substr($line, 0, $point);
     my @left;
@@ -262,8 +263,8 @@ sub parse_bash_cmdline {
         $right =~ s/^\S+//;
         @right = @{ $opts->{parse_line_sub}->($right) } if length($right);
     }
-    $log->tracef("left=q(%s), \@left=%s, right=q(%s), \@right=%s",
-                 $left, \@left, $right, \@right);
+    #$log->tracef("left=q(%s), \@left=%s, right=q(%s), \@right=%s",
+    #             $left, \@left, $right, \@right);
 
     my $words = [@left, @right],
     my $cword = @left ? scalar(@left)-1 : 0;
@@ -278,7 +279,7 @@ sub parse_bash_cmdline {
     $cword++ if $nspc_lastw < $nspc_left;
 
     my $res = {words => $words, cword => $cword};
-    $log->tracef("<- _parse_request, result=%s", $res);
+    #$log->tracef("<- _parse_request, result=%s", $res);
     $res;
 }
 
