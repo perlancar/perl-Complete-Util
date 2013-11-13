@@ -3,7 +3,7 @@ package SHARYANTO::Complete::Util;
 use 5.010001;
 use strict;
 use warnings;
-#use Log::Any '$log';
+use Log::Any '$log';
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -129,7 +129,6 @@ $SPEC{complete_file} = {
 };
 sub complete_file {
     my %args  = @_;
-    #$log->tracef("=> complete_file(%s)", \%args);
     my $word  = $args{word} // "";
     my $f     = $args{f} // 1;
     my $d     = $args{d} // 1;
@@ -240,9 +239,12 @@ sub parse_shell_cmdline {
 
     $line  //= $ENV{COMP_LINE};
     $point //= $ENV{COMP_POINT};
-    #$log->tracef("line=q(%s), point=%s", $line, $point);
 
     my $left  = substr($line, 0, $point);
+    my $right = substr($line, $point);
+    $log->tracef("line=<%s>, point=%s, left=<%s>, right=<%s>",
+                 $line, $point, $left, $right);
+
     my @left;
     if (length($left)) {
         @left = @{ $opts->{parse_line_sub}->($left) };
@@ -252,14 +254,13 @@ sub parse_shell_cmdline {
         shift @left;
     }
 
-    my $right = substr($line, $point);
     my @right;
     if (length($right)) {
+        # shave off the rest of the word at "cursor"
         $right =~ s/^\S+//;
         @right = @{ $opts->{parse_line_sub}->($right) } if length($right);
     }
-    #$log->tracef("left=q(%s), \@left=%s, right=q(%s), \@right=%s",
-    #             $left, \@left, $right, \@right);
+    $log->tracef("\@left=%s, \@right=%s", \@left, \@right);
 
     my $words = [@left, @right],
     my $cword = @left ? scalar(@left)-1 : 0;
