@@ -32,7 +32,6 @@ $SPEC{complete_array} = {
 };
 sub complete_array {
     my %args  = @_;
-    #$log->tracef("=> complete_array(%s)", \%args);
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
     my $ci    = $args{ci};
@@ -57,7 +56,6 @@ $SPEC{complete_hash_key} = {
 };
 sub complete_hash_key {
     my %args  = @_;
-    #$log->tracef("=> complete_hash_key(%s)", \%args);
     my $hash  = $args{hash} or die "Please specify hash";
     my $word  = $args{word} // "";
     my $ci    = $args{ci};
@@ -75,7 +73,6 @@ $SPEC{complete_env} = {
 };
 sub complete_env {
     my %args  = @_;
-    #$log->tracef("=> complete_env(%s)", \%args);
     my $word  = $args{word} // "";
     my $ci    = $args{ci};
     if ($word =~ /^\$/) {
@@ -96,7 +93,6 @@ sub complete_program {
     require List::MoreUtils;
 
     my %args  = @_;
-    #$log->tracef("=> complete_program(%s)", \%args);
     my $word  = $args{word} // "";
 
     my @words;
@@ -239,7 +235,6 @@ _
 };
 sub parse_shell_cmdline {
     my ($line, $point, $opts) = @_;
-    #$log->tracef("-> parse_shell_cmdline(%s, %s)", $line, $point);
     $opts //= {};
     $opts->{parse_line_sub} //= \&_line_to_argv;
 
