@@ -161,12 +161,7 @@ sub complete_file {
 
     my $w = complete_array(array=>\@words);
 
-    # this is a trick so that when completion is a single dir/, bash does not
-    # insert a space but still puts the cursor after "/", just like when it's
-    # doing dir completion.
-    if (@$w == 1 && $w->[0] =~ m!/\z!) { $w->[1] = "$w->[0] ";  }
-
-    $w;
+    mimic_shell_dir_completion(completion=>$w);
 }
 
 $SPEC{mimic_shell_dir_completion} = {
