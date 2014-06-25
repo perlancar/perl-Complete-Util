@@ -326,7 +326,6 @@ sub parse_shell_cmdline {
     $cword++ if $nspc_lastw < $nspc_left;
 
     my $res = {words => $words, cword => $cword};
-    #$log->tracef("<- _parse_request, result=%s", $res);
     $res;
 }
 
