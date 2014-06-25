@@ -31,6 +31,9 @@ $SPEC{complete_array} = {
         ci    => { schema=>[bool=>{default=>0}] },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub complete_array {
     my %args  = @_;
@@ -55,6 +58,9 @@ $SPEC{complete_hash_key} = {
         ci    => { schema=>[bool=>{default=>0}] },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub complete_hash_key {
     my %args  = @_;
@@ -72,6 +78,9 @@ $SPEC{complete_env} = {
         ci    => { schema=>[bool=>{default=>0}] },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub complete_env {
     my %args  = @_;
@@ -90,6 +99,9 @@ $SPEC{complete_program} = {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub complete_program {
     require List::MoreUtils;
@@ -128,6 +140,9 @@ $SPEC{complete_file} = {
                   schema=>[bool=>{default=>1}] },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub complete_file {
     my %args  = @_;
@@ -186,6 +201,9 @@ _
         completion => { schema=>'str*', req=>1, pos=>0 },
     },
     result_naked => 1,
+    result => {
+        schema => 'array',
+    },
 };
 sub mimic_shell_dir_completion {
     my %args  = @_;
@@ -258,6 +276,12 @@ _
         },
     },
     result_naked => 1,
+    result => {
+        schema => [hash => {keys => {
+            words=>['array*' => of => 'str*'],
+            cword=>'int*',
+        }}],
+    },
 };
 sub parse_shell_cmdline {
     my ($line, $point, $opts) = @_;
