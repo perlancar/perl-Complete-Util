@@ -8,7 +8,7 @@ use File::chdir;
 use File::Temp qw(tempdir);
 use Test::More;
 
-use SHARYANTO::Complete::Util qw(complete_file);
+use Complete::Util qw(complete_file);
 
 sub mkfiles { open my($fh), ">$_" for @_ }
 sub mkdirs  { mkdir $_ for @_ }

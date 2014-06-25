@@ -6,14 +6,14 @@ use warnings;
 #use Log::Any '$log';
 
 use File::Which;
-use SHARYANTO::Complete::Util qw(parse_shell_cmdline);
+use Complete::Util qw(parse_shell_cmdline);
 use Test::More;
 
 plan skip_all => "bash needed" unless which("bash");
 
 subtest "_line_to_argv" => sub {
     is_deeply(
-        SHARYANTO::Complete::Util::_line_to_argv(
+        Complete::Util::_line_to_argv(
             q{"1 '$HOME" '$HOME "'   3 4}),
         [qq{1 '$ENV{HOME}}, q{$HOME "}, q{3}, q{4}],
         "basics"
@@ -23,7 +23,7 @@ subtest "_line_to_argv" => sub {
     # Testers setup has ~/fake as their home, don't know how to work around it
     # yet.
     {
-        my @res = explain(SHARYANTO::Complete::Util::_line_to_argv(
+        my @res = explain(Complete::Util::_line_to_argv(
             qq{$ENV{HOME} $ENV{HOME}/ /$ENV{HOME} $ENV{HOME}x}));
         my $res = join '', @res;
         my $expected = <<_;
@@ -40,7 +40,7 @@ _
     }
 
     is_deeply(
-        SHARYANTO::Complete::Util::_line_to_argv(
+        Complete::Util::_line_to_argv(
             q{"a}),
         [],
         "unclosed quotes"

@@ -6,7 +6,7 @@ use warnings;
 
 use Test::More 0.98;
 
-use SHARYANTO::Complete::Util qw(mimic_shell_dir_completion);
+use Complete::Util qw(mimic_shell_dir_completion);
 
 test_complete(
     completion => [],

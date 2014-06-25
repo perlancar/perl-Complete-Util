@@ -6,7 +6,7 @@ use warnings;
 
 use Test::More 0.98;
 
-use SHARYANTO::Complete::Util qw(complete_array);
+use Complete::Util qw(complete_array);
 
 test_complete(
     word      => 'a',

@@ -7,7 +7,7 @@ use warnings;
 
 use Test::More;
 
-use SHARYANTO::Complete::Util qw(complete_hash_key);
+use Complete::Util qw(complete_hash_key);
 
 test_complete(
     word      => 'a',

@@ -1,4 +1,4 @@
-package SHARYANTO::Complete::Util;
+package Complete::Util;
 
 use 5.010001;
 use strict;
@@ -308,8 +308,3 @@ sub parse_shell_cmdline {
 
 1;
 # ABSTRACT: Shell tab completion routines
-
-
-=head1 SEE ALSO
-
-L<SHARYANTO>

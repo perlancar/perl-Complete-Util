@@ -6,7 +6,7 @@ use warnings;
 
 use Test::More 0.98;
 
-use SHARYANTO::Complete::Util qw(complete_env);
+use Complete::Util qw(complete_env);
 
 {
     local %ENV = (APPLE=>1, AWAY=>2, DOCTOR=>3, AN=>4);
