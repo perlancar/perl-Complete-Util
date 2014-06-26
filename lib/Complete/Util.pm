@@ -20,11 +20,13 @@ our @EXPORT_OK = qw(
                );
 
 # VERSION
+# DATE
 
 our %SPEC;
 
 $SPEC{complete_array} = {
     v => 1.1,
+    summary => 'Complete from array',
     args => {
         array => { schema=>['array*'=>{of=>'str*'}], pos=>0, req=>1 },
         word  => { schema=>[str=>{default=>''}], pos=>1 },
@@ -52,6 +54,7 @@ sub complete_array {
 
 $SPEC{complete_hash_key} = {
     v => 1.1,
+    summary => 'Complete from hash keys',
     args => {
         hash  => { schema=>['hash*'=>{}], pos=>0, req=>1 },
         word  => { schema=>[str=>{default=>''}], pos=>1 },
@@ -73,6 +76,13 @@ sub complete_hash_key {
 
 $SPEC{complete_env} = {
     v => 1.1,
+    summary => 'Complete from environment variables',
+    description => <<'_',
+
+On Windows, environment variable names are all converted to uppercase. You can
+use case-insensitive option (`ci`) to match against original casing.
+
+_
     args => {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
         ci    => { schema=>[bool=>{default=>0}] },
@@ -95,6 +105,12 @@ sub complete_env {
 
 $SPEC{complete_program} = {
     v => 1.1,
+    summary => 'Complete program name found in PATH',
+    description => <<'_',
+
+Windows is supported, on Windows PATH will be split using /;/ instead of /:/.
+
+_
     args => {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
     },
