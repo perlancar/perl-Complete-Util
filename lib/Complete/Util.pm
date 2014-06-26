@@ -340,5 +340,94 @@ sub parse_shell_cmdline {
     $res;
 }
 
+$SPEC{format_completion} = {
+    v => 1.1,
+    summary => 'Format completion for output to shell',
+    description => <<'_',
+
+Usually, like in bash, we just need to output the entries one line at a time,
+with some special characters in the entry escaped using backslashes so it's not
+interpreted by the shell.
+
+_
+    args => {
+        shell_completion => {
+            summary => 'Result of shell completion',
+            description => <<'_',
+
+A hash containing list of completions and other metadata. For example:
+
+    {
+        completion => ['f1', 'f2', 'f3.txt', 'foo:bar.txt'],
+        is_filename => 1,
+    }
+
+_
+            schema=>'hash*',
+            req=>1,
+            pos=>0,
+        },
+    },
+    result => {
+        schema => 'str*',
+    },
+    result_naked => 1,
+};
+sub format_shell_completion {
+    my %args = @_;
+
+    my $shcomp = $args{shell_completion} // {};
+    my $comp = $shcomp->{completion} // [];
+
+    my @lines;
+    for (@$comp) {
+        my $str = $_;
+        $str =~ s!([^A-Za-z0-9,+._/\$-])!\\$1!g;
+        push @lines, $str;
+        $str .= "\n";
+    }
+    join("", @lines);
+}
+
 1;
-# ABSTRACT: Shell tab completion routines
+# ABSTRACT: Shell completion routines
+
+=head1 DESCRIPTION
+
+This module provides routines for doing programmable shell tab completion.
+Currently this module is geared towards bash, but support for other shells might
+be added in the future (e.g. zsh, fish).
+
+The C<complete_*()> routines are used to complete from a specific data source or
+for a specific type. They are the lower-level functions.
+
+
+=head1 DEVELOPER'S NOTES
+
+We want to future-proof the API so future features won't break the API (too
+hardly). Below are the various notes related to that.
+
+In fish, aside from string, each completion alternative has some extra metadata.
+For example, when completing filenames, fish might show each possible completion
+filename with type (file/directory) and file size. When completing options, it
+can also display a summary text for each option. So instead of an array of
+strings, array of hashrefs will be allowed in the future:
+
+ ["word1", "word2", "word3"]
+ [ {word=>"word1", ...},
+   {word=>"word2", ...},
+   {word=>"word3", ...}, ]
+
+fish also supports matching not by prefix only, but using wildcard. For example,
+if word if C<b??t> then C<bait> can be suggested as a possible completion. fish
+also supports fuzzy matching (e.g. C<house> can bring up C<horse> or C<hose>).
+There is also spelling-/auto-correction feature in some shells. This feature can
+be added later in the various C<complete_*()> routines. Or there could be helper
+routines for this. In general this won't pose a problem to the API.
+
+fish supports autosuggestion (autocomplete). When user types, without she
+pressing Tab, the shell will suggest completion (not only for a single token,
+but possibly for the entire command). If the user wants to accept the
+suggestion, she can press the Right arrow key. This can be supported later by a
+function e.g. C<shell_complete()> which accepts the command line string.
+
