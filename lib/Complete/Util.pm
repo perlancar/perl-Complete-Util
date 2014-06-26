@@ -229,10 +229,35 @@ sub mimic_shell_dir_completion {
     [$c->[0], "$c->[0] "];
 }
 
-# current problems: Can't parse unclosed quotes (e.g. spanel get-plan "BISNIS
-# A<tab>) and probably other problems, since we don't have access to COMP_WORDS
-# like in shell functions.
-sub _line_to_argv {
+$SPEC{break_cmdline_into_words} = {
+    v => 1.1,
+    summary => 'Break command-line string into words',
+    description => <<'_',
+
+The first step of shell completion is to break the command-line string
+(e.g. from COMP_LINE in bash) into words.
+
+Bash by default split using these characters (from COMP_WORDBREAKS):
+
+    "'@><=;|&(:
+
+We don't necessarily want to split using default bash's rule, for example in
+Perl we might want to complete module names which contain colons (e.g.
+`Module::Path`).
+
+By default, this routine splits by spaces and tabs and takes into account
+backslash and quoting. Unclosed quotes won't generate error.
+
+_
+    args => {
+        cmdline => {
+            schema => 'str*',
+            req => 1,
+            pos => 0,
+        },
+    },
+};
+sub break_cmdline_into_words {
     require IPC::Open2;
 
     my $line = pop;
@@ -365,7 +390,7 @@ A hash containing list of completions and other metadata. For example:
 
     {
         completion => ['f1', 'f2', 'f3.txt', 'foo:bar.txt'],
-        is_filename => 1,
+        type => 'filename',
     }
 
 _
@@ -436,4 +461,3 @@ pressing Tab, the shell will suggest completion (not only for a single token,
 but possibly for the entire command). If the user wants to accept the
 suggestion, she can press the Right arrow key. This can be supported later by a
 function e.g. C<shell_complete()> which accepts the command line string.
-
