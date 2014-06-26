@@ -245,7 +245,7 @@ The first step of shell completion is to break the command-line string
 
 Bash by default split using these characters (from COMP_WORDBREAKS):
 
-    "'@><=;|&(:
+ COMP_WORDBREAKS=$' \t\n"\'@><=;|&(:'
 
 We don't necessarily want to split using default bash's rule, for example in
 Perl we might want to complete module names which contain colons (e.g.
@@ -261,6 +261,10 @@ _
             req => 1,
             pos => 0,
         },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'array*',
     },
 };
 sub break_cmdline_into_words {
