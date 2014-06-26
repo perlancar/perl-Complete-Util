@@ -15,9 +15,8 @@ our @EXPORT_OK = qw(
                        complete_program
 
                        mimic_shell_dir_completion
-
+                       break_cmdline_into_words
                        parse_shell_cmdline
-
                        format_shell_completion
                );
 
@@ -265,29 +264,73 @@ _
     },
 };
 sub break_cmdline_into_words {
-    require IPC::Open2;
+    my %args = @_;
+    my $str = $args{cmdline};
 
-    my $line = pop;
-    my $cmd = q{_pbc() { for a in "$@"; do echo "$a"; done }; _pbc } . $line;
-    my ($reader, $writer);
-    my $pid = IPC::Open2::open2($reader,$writer,'bash 2>/dev/null');
-    print $writer $cmd;
-    close $writer;
-    my @array = map {chomp;$_} <$reader>;
+    # BEGIN stolen from Parse::CommandLine, with some mods
+    $str =~ s/\A\s+//ms;
+    $str =~ s/\s+\z//ms;
 
-    # We don't want to expand ~ for user experience and to be consistent with
-    # Bash's behavior for tab completion (as opposed to expansion of ARGV).
-    my $home_dir = (getpwuid($<))[7];
-    @array = map { s!\A\Q$home_dir\E(/|\z)!\~$1!; $_ } @array;
+    my @argv;
+    my $buf;
+    my $escaped;
+    my $double_quoted;
+    my $single_quoted;
 
-    \@array;
+    for my $char (split //, $str) {
+        if ($escaped) {
+            $buf .= $char;
+            $escaped = undef;
+            next;
+        }
+
+        if ($char eq '\\') {
+            if ($single_quoted) {
+                $buf .= $char;
+            } else {
+                $escaped = 1;
+            }
+            next;
+        }
+
+        if ($char =~ /\s/) {
+            if ($single_quoted || $double_quoted) {
+                $buf .= $char;
+            } else {
+                push @argv, $buf if defined $buf;
+                undef $buf;
+            }
+            next;
+        }
+
+        if ($char eq '"') {
+            if ($single_quoted) {
+                $buf .= $char;
+                next;
+            }
+            $double_quoted = !$double_quoted;
+            next;
+        }
+
+        if ($char eq "'") {
+            if ($double_quoted) {
+                $buf .= $char;
+                next;
+            }
+            $single_quoted = !$single_quoted;
+            next;
+        }
+
+        $buf .= $char;
+    }
+    push @argv, $buf if defined $buf;
+
+    #if ($escaped || $single_quoted || $double_quoted) {
+    #    die 'invalid command line string';
+    #}
+    \@argv;
+    # END stolen from Parse::CommandLine
 }
-
-# simplistic parsing, doesn't consider shell syntax at all. doesn't work the
-# minute we use funny characters.
-#sub _line_to_argv_BC {
-#    [split(/\h+/, $_[0])];
-#}
 
 $SPEC{parse_shell_cmdline} = {
     v => 1.1,
@@ -314,15 +357,6 @@ _
             schema => 'int*',
             pos => 1,
         },
-        opts => {
-            schema => 'hash*',
-            description => <<'_',
-
-Currently known options: parse_line_sub (code).
-
-_
-            pos => 2,
-        },
     },
     result_naked => 1,
     result => {
@@ -333,9 +367,7 @@ _
     },
 };
 sub parse_shell_cmdline {
-    my ($line, $point, $opts) = @_;
-    $opts //= {};
-    $opts->{parse_line_sub} //= \&_line_to_argv;
+    my ($line, $point) = @_;
 
     $line  //= $ENV{COMP_LINE};
     $point //= $ENV{COMP_POINT};
@@ -347,7 +379,7 @@ sub parse_shell_cmdline {
 
     my @left;
     if (length($left)) {
-        @left = @{ $opts->{parse_line_sub}->($left) };
+        @left = @{ break_cmdline_into_words(cmdline=>$left) };
         # shave off $0
         substr($left, 0, length($left[0])) = "";
         $left =~ s/^\s+//;
@@ -358,7 +390,8 @@ sub parse_shell_cmdline {
     if (length($right)) {
         # shave off the rest of the word at "cursor"
         $right =~ s/^\S+//;
-        @right = @{ $opts->{parse_line_sub}->($right) } if length($right);
+        @right = @{ break_cmdline_into_words(cmdline=>$right) }
+            if length($right);
     }
     $log->tracef("\@left=%s, \@right=%s", \@left, \@right);
 
