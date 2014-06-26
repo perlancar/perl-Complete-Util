@@ -122,32 +122,27 @@ _
 sub complete_program {
     require List::MoreUtils;
 
-    my %args  = @_;
-    my $word  = $args{word} // "";
+    my %args = @_;
+    my $word = $args{word} // "";
+    my $ci   = $args{ci};
 
-    my @words;
-    my @dir;
-    my $word_has_path;
-    $word =~ m!(.*)/(.*)! and do { @dir = ($1); $word_has_path++; $word = $2 };
-    @dir = split /:/, $ENV{PATH} unless @dir;
-    unshift @dir, ".";
-    for my $dir (@dir) {
-        $dir =~ s!/+$!!; #TEST
+    my $word_re = $ci ? qr/\A\Q$word/i : qr/\A\Q$word/;
+
+    my @res;
+    my @dirs = split(($^O =~ /Win32/ ? qr/;/ : qr/:/), $ENV{PATH});
+    for my $dir (@dirs) {
         opendir my($dh), $dir or next;
         for (readdir($dh)) {
-            next if $word !~ /^\.\.?$/ && ($_ eq '.' || $_ eq '..');
-            next unless index($_, $word) == 0;
-            next unless (-x "$dir/$_") && (-f _) ||
-                ($dir eq '.' || $word_has_path) && (-d _);
-            push @words, (-d _) ? "$_/" : $_;
+            push @res, $_ if $_ =~ $word_re && !(-d "$dir/$_") && (-x _);
         };
     }
 
-    complete_array(array=>[List::MoreUtils::uniq(@words)]);
+    [sort(List::MoreUtils::uniq(@res))];
 }
 
 $SPEC{complete_file} = {
     v => 1.1,
+    summary => 'Complete file and directory from local filesystem',
     args => {
         word => { schema=>[str=>{default=>''}], pos=>0 },
         f    => { summary => 'Whether to include file',
