@@ -17,6 +17,8 @@ our @EXPORT_OK = qw(
                        mimic_shell_dir_completion
 
                        parse_shell_cmdline
+
+                       format_shell_completion
                );
 
 # VERSION
@@ -209,7 +211,11 @@ completion possible (`foo/` and `foo/ `).
 
 _
     args => {
-        completion => { schema=>'str*', req=>1, pos=>0 },
+        completion => {
+            schema=>'array*',
+            req=>1,
+            pos=>0,
+        },
     },
     result_naked => 1,
     result => {
@@ -340,7 +346,7 @@ sub parse_shell_cmdline {
     $res;
 }
 
-$SPEC{format_completion} = {
+$SPEC{format_shell_completion} = {
     v => 1.1,
     summary => 'Format completion for output to shell',
     description => <<'_',
