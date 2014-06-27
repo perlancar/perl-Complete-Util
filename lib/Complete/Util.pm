@@ -425,6 +425,7 @@ with some special characters in the entry escaped using backslashes so it's not
 interpreted by the shell.
 
 _
+    args_as => 'array',
     args => {
         shell_completion => {
             summary => 'Result of shell completion',
@@ -449,9 +450,9 @@ _
     result_naked => 1,
 };
 sub format_shell_completion {
-    my %args = @_;
+    my ($shcomp) = @_;
 
-    my $shcomp = $args{shell_completion} // {};
+    $shcomp //= {};
     my $comp = $shcomp->{completion} // [];
 
     my @lines;
