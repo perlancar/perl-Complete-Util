@@ -454,13 +454,19 @@ sub format_shell_completion {
 
     $shcomp //= {};
     my $comp = $shcomp->{completion} // [];
+    my $type = $shcomp->{type} // '';
 
     my @lines;
     for (@$comp) {
         my $str = $_;
-        $str =~ s!([^A-Za-z0-9,+._/\$-])!\\$1!g;
-        push @lines, $str;
+        if ($type eq 'env') {
+            # don't escape $
+            $str =~ s!([^A-Za-z0-9,+._/\$-])!\\$1!g;
+        } else {
+            $str =~ s!([^A-Za-z0-9,+._/-])!\\$1!g;
+        }
         $str .= "\n";
+        push @lines, $str;
     }
     join("", @lines);
 }
