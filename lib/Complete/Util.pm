@@ -26,6 +26,7 @@ our @EXPORT_OK = qw(
 our %SPEC;
 
 # all complete_* routines accept hash/named args, the other accept positional.
+# complete_* routines complete for a specific type and return array of strings.
 
 $SPEC{complete_array} = {
     v => 1.1,
