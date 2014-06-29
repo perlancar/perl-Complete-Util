@@ -435,7 +435,10 @@ interpreted by the shell.
 This function accepts a hash, not an array. You can put the result of
 `complete_*` function in the `completion` key of the hash. The other keys can be
 added for hints on how to format the completion reply more
-correctly/appropriately to the shell.
+correctly/appropriately to the shell. Known hints: `type` (string, can be
+`filename`, `env`, or others; this helps the routine picks the appropriate
+escaping), `is_path` (bool, if set to true then `mimic_shell_dir_completion`
+logic is applied).
 
 _
     args_as => 'array',
@@ -467,6 +470,7 @@ sub format_shell_completion {
 
     $shcomp //= {};
     my $comp = $shcomp->{completion} // [];
+    $comp = mimic_shell_dir_completion($comp) if $shcomp->{is_path};
     my $type = $shcomp->{type} // '';
 
     my @lines;
