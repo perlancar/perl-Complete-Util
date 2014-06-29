@@ -25,6 +25,8 @@ our @EXPORT_OK = qw(
 
 our %SPEC;
 
+# all complete_* routines accept hash/named args, the other accept positional.
+
 $SPEC{complete_array} = {
     v => 1.1,
     summary => 'Complete from array',
@@ -219,6 +221,7 @@ shell won't automatically add a space because there are now more than one
 completion possible (`foo/` and `foo/ `).
 
 _
+    args_as => 'array',
     args => {
         completion => {
             schema=>'array*',
@@ -232,8 +235,7 @@ _
     },
 };
 sub mimic_shell_dir_completion {
-    my %args  = @_;
-    my $c  = $args{completion};
+    my $c = shift;
     return $c unless @$c == 1 && $c->[0] =~ m!/\z!;
     [$c->[0], "$c->[0] "];
 }
@@ -261,6 +263,7 @@ By default, this routine splits by spaces and tabs and takes into account
 backslash and quoting. Unclosed quotes won't generate error.
 
 _
+    args_as => 'array',
     args => {
         cmdline => {
             schema => 'str*',
@@ -274,12 +277,11 @@ _
     },
 };
 sub break_cmdline_into_words {
-    my %args = @_;
-    my $str = $args{cmdline};
+    my $cmdline = shift;
 
     # BEGIN stolen from Parse::CommandLine, with some mods
-    $str =~ s/\A\s+//ms;
-    $str =~ s/\s+\z//ms;
+    $cmdline =~ s/\A\s+//ms;
+    $cmdline =~ s/\s+\z//ms;
 
     my @argv;
     my $buf;
@@ -287,7 +289,7 @@ sub break_cmdline_into_words {
     my $double_quoted;
     my $single_quoted;
 
-    for my $char (split //, $str) {
+    for my $char (split //, $cmdline) {
         if ($escaped) {
             $buf .= $char;
             $escaped = undef;
