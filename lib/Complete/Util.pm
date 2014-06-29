@@ -225,6 +225,11 @@ _
             req=>1,
             pos=>0,
         },
+        sep => {
+            schema => 'str*',
+            default => '/',
+            pos => 1,
+        },
     },
     result_naked => 1,
     result => {
@@ -232,9 +237,10 @@ _
     },
 };
 sub mimic_shell_dir_completion {
-    my $c = shift;
-    return $c unless @$c == 1 && $c->[0] =~ m!/\z!;
-    [$c->[0], "$c->[0] "];
+    my ($comp, $sep) = @_;
+    $sep = '/' unless defined($sep) && length($sep);
+    return $comp unless @$comp == 1 && $comp->[0] =~ m!\Q$sep\E\z!;
+    [$comp->[0], "$comp->[0] "];
 }
 
 $SPEC{break_cmdline_into_words} = {
@@ -435,7 +441,8 @@ added for hints on how to format the completion reply more
 correctly/appropriately to the shell. Known hints: `type` (string, can be
 `filename`, `env`, or others; this helps the routine picks the appropriate
 escaping), `is_path` (bool, if set to true then `mimic_shell_dir_completion`
-logic is applied).
+logic is applied), `path_sep` (string, character to separate path, defaults to
+`/`).
 
 _
     args_as => 'array',
@@ -467,7 +474,8 @@ sub format_shell_completion {
 
     $shcomp //= {};
     my $comp = $shcomp->{completion} // [];
-    $comp = mimic_shell_dir_completion($comp) if $shcomp->{is_path};
+    $comp = mimic_shell_dir_completion($comp, $shcomp->{path_sep})
+        if $shcomp->{is_path};
     my $type = $shcomp->{type} // '';
 
     my @lines;
@@ -477,7 +485,7 @@ sub format_shell_completion {
             # don't escape $
             $str =~ s!([^A-Za-z0-9,+._/\$-])!\\$1!g;
         } else {
-            $str =~ s!([^A-Za-z0-9,+._/-])!\\$1!g;
+            $str =~ s!([^A-Za-z0-9,+._/:-])!\\$1!g;
         }
         $str .= "\n";
         push @lines, $str;
