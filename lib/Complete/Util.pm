@@ -203,6 +203,9 @@ $SPEC{mimic_shell_dir_completion} = {
     summary => 'Make completion of paths behave more like shell',
     description => <<'_',
 
+Note for users: normally you just need to use `format_shell_completion()` and
+need not know about this function.
+
 This function employs a trick to make directory/path completion work more like
 shell's own. In shell, when completing directory, the sole completion for `foo/`
 is `foo/`, the cursor doesn't automatically add a space (like the way it does
@@ -239,6 +242,9 @@ $SPEC{break_cmdline_into_words} = {
     v => 1.1,
     summary => 'Break command-line string into words',
     description => <<'_',
+
+Note to users: this is an internal function. Normally you only need to use
+`parse_shell_cmdline`.
 
 The first step of shell completion is to break the command-line string
 (e.g. from COMP_LINE in bash) into words.
@@ -424,6 +430,11 @@ Usually, like in bash, we just need to output the entries one line at a time,
 with some special characters in the entry escaped using backslashes so it's not
 interpreted by the shell.
 
+This function accepts a hash, not an array. You can put the result of
+`complete_*` function in the `completion` key of the hash. The other keys can be
+added for hints on how to format the completion reply more
+correctly/appropriately to the shell.
+
 _
     args_as => 'array',
     args => {
@@ -480,11 +491,45 @@ This module provides routines for doing programmable shell tab completion.
 Currently this module is geared towards bash, but support for other shells might
 be added in the future (e.g. zsh, fish).
 
-The C<complete_*()> routines are used to complete from a specific data source or
-for a specific type. They are the lower-level functions.
+For more information about bash programmable completion, please consult the bash
+manual. Basically bash allows you to call an external program (in our case, a
+Perl script) for completion. When a user asks for a completion of a command by
+pressing Tab, bash will invoke your program with COMP_LINE and COMP_POINT
+environment variables which contain, respectively, raw command line string and
+cursor position. You'll need to parse the command line into "words", come up
+with a list of completion for the word at cursor position, and output the list
+as lines to STDOUT. This module provides helper routines for that.
+
+Say we're writing a utility called C<progless> which will invoke B<less> on a
+program located in PATH (in other words, show a program's source using less).
+You want to provide a completion so that when you press Tab, a list of programs
+on PATH will be provided. To do this, you can write a Perl program as follows:
+
+ # progless-completion
+ #!/usr/bin/perl
+ use Complete::Util qw(parse_shell_cmdline complete_program);
+ my $cmdline = parse_shell_cmdline();
+ my $res = complete_program(word => $cmdline->{words}[0]);
+ print format_shell_completion({completion=>$res});
+
+You'll need to put this program somewhere in your PATH and then install it via
+bash command:
+
+ % complete -C progless-complete progless
+
+then you'll be able to do:
+
+ % progless <Tab>
+ % progless deb<Tab>
+
+Also, take a look at L<Perinci::CmdLine>, a CLI framework that lets you do
+completion more easily.
 
 
 =head1 DEVELOPER'S NOTES
+
+This is an internal note only, module users are not required to read this
+section.
 
 We want to future-proof the API so future features won't break the API (too
 hardly). Below are the various notes related to that.
@@ -512,3 +557,14 @@ pressing Tab, the shell will suggest completion (not only for a single token,
 but possibly for the entire command). If the user wants to accept the
 suggestion, she can press the Right arrow key. This can be supported later by a
 function e.g. C<shell_complete()> which accepts the command line string.
+
+
+=head1 SEE ALSO
+
+Programmable Completion section in Bash manual:
+L<https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html>
+
+L<http://blogs.perl.org/users/steven_haryanto/2014/06/one-final-rant-about-programmable-completion-in-bash.html>
+
+L<Perinci::CmdLine>, a CLI framework that uses this module.
+
