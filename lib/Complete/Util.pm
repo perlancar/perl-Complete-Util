@@ -193,9 +193,6 @@ sub complete_file {
     mimic_shell_dir_completion($w);
 }
 
-# TODO: complete_user (probably in a separate module)
-# TODO: complete_group (probably in a separate module)
-# TODO: complete_pid (probably in a separate module)
 # TODO: complete_filesystem (probably in a separate module)
 # TODO: complete_hostname (/etc/hosts, ~/ssh/.known_hosts, ...)
 # TODO: complete_package (deb, rpm, ...)
