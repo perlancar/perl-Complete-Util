@@ -190,7 +190,7 @@ sub complete_file {
 
     my $w = complete_array(array=>\@words);
 
-    mimic_shell_dir_completion(completion=>$w);
+    mimic_shell_dir_completion($w);
 }
 
 # TODO: complete_user (probably in a separate module)
@@ -391,7 +391,7 @@ sub parse_shell_cmdline {
 
     my @left;
     if (length($left)) {
-        @left = @{ break_cmdline_into_words(cmdline=>$left) };
+        @left = @{ break_cmdline_into_words($left) };
         # shave off $0
         substr($left, 0, length($left[0])) = "";
         $left =~ s/^\s+//;
@@ -402,7 +402,7 @@ sub parse_shell_cmdline {
     if (length($right)) {
         # shave off the rest of the word at "cursor"
         $right =~ s/^\S+//;
-        @right = @{ break_cmdline_into_words(cmdline=>$right) }
+        @right = @{ break_cmdline_into_words($right) }
             if length($right);
     }
     $log->tracef("\@left=%s, \@right=%s", \@left, \@right);
