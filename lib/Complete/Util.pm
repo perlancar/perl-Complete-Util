@@ -519,7 +519,11 @@ on PATH will be provided. To do this, you can write a Perl program as follows:
 
  # progless-completion
  #!/usr/bin/perl
- use Complete::Util qw(parse_shell_cmdline complete_program);
+ use Complete::Util qw(
+     parse_shell_cmdline
+     complete_program
+     format_shell_completion
+ );
  my $cmdline = parse_shell_cmdline();
  my $res = complete_program(word => $cmdline->{words}[0]);
  print format_shell_completion({completion=>$res});
@@ -579,4 +583,3 @@ L<https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.htm
 L<http://blogs.perl.org/users/steven_haryanto/2014/06/one-final-rant-about-programmable-completion-in-bash.html>
 
 L<Perinci::CmdLine>, a CLI framework that uses this module.
-
