@@ -192,6 +192,8 @@ sub complete_file {
 1;
 # ABSTRACT: General completion routines
 
+=for Pod::Coverage ^(complete_array)$
+
 =head1 DESCRIPTION
 
 
