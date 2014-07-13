@@ -1,5 +1,8 @@
 package Complete::Util;
 
+# DATE
+# VERSION
+
 use 5.010001;
 use strict;
 use warnings;
@@ -13,9 +16,6 @@ our @EXPORT_OK = qw(
                        complete_file
                        complete_program
                );
-
-# VERSION
-# DATE
 
 our %SPEC;
 
@@ -141,11 +141,30 @@ $SPEC{complete_file} = {
     v => 1.1,
     summary => 'Complete file and directory from local filesystem',
     args => {
-        word => { schema=>[str=>{default=>''}], pos=>0 },
-        file => { summary => 'Whether to include file',
-                  schema=>[bool=>{default=>1}] },
-        dir  => { summary => 'Whether to include directory',
-                  schema=>[bool=>{default=>1}] },
+        word => {
+            schema  => [str=>{default=>''}],
+            pos     => 0,
+        },
+        filter => {
+            summary => 'Only return items matching this filter',
+            description => <<'_',
+
+Filter can either be a string or a code.
+
+For string filter, you can specify a pipe-separated groups of sequences of these
+characters: f, d, r, w, x. Dash can appear anywhere in the sequence to mean
+not/negate. An example: `f` means to only show regular files, `-f` means only
+show non-regular files, `drwx` means to show only directories which are
+readable, writable, and executable (cd-able) by the user. `wf|wd` means writable
+regular files or writable directories.
+
+For code filter, you supply a coderef. The coderef will be called for each item
+with these arguments: `$name`. It should return true if it wants the item to be
+included.
+
+_
+            schema  => ['any*' => {of => ['str*', 'code*']}],
+        },
     },
     result_naked => 1,
     result => {
@@ -153,10 +172,36 @@ $SPEC{complete_file} = {
     },
 };
 sub complete_file {
-    my %args  = @_;
-    my $word  = $args{word} // "";
-    my $f     = $args{file} // 1;
-    my $d     = $args{dir} // 1;
+    my %args   = @_;
+    my $word   = $args{word} // "";
+    my $filter = $args{filter};
+
+    if ($filter && !ref($filter)) {
+        my @seqs = split /\s*\|\s*/, $filter;
+        $filter = sub {
+            my $name = shift;
+            my @st = stat($name) or return 0;
+            my $mode = $st[2];
+            my $pass;
+          SEQ:
+            for my $seq (@seqs) {
+                my $neg = sub { $_[0] };
+                for my $c (split //, $seq) {
+                    if    ($c eq '-') { $neg = sub { $_[0] ? 0 : 1 } }
+                    elsif ($c eq 'r') { next SEQ unless $neg->($mode & 0400) }
+                    elsif ($c eq 'w') { next SEQ unless $neg->($mode & 0200) }
+                    elsif ($c eq 'x') { next SEQ unless $neg->($mode & 0100) }
+                    elsif ($c eq 'f') { next SEQ unless $neg->($mode & 0100000)}
+                    elsif ($c eq 'd') { next SEQ unless $neg->($mode & 0040000)}
+                    else {
+                        die "Unknown character in filter: $c (in $seq)";
+                    }
+                }
+                $pass = 1; last SEQ;
+            }
+            $pass;
+        };
+    }
 
     my @all;
     if ($word =~ m!(\A|/)\z!) {
@@ -175,9 +220,8 @@ sub complete_file {
 
     my @words;
     for (@all) {
-        next if (-f $_) && !$f;
-        next if (-d _ ) && !$d;
-        $_ = "$_/" if (-d _) && !m!/\z!;
+        next if $filter && !$filter->($_);
+        $_ = "$_/" if (-d $_) && !m!/\z!; # XXX double stat
         #s!.+/(.+)!$1!;
         push @words, $_;
     }
