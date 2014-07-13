@@ -155,8 +155,8 @@ For string filter, you can specify a pipe-separated groups of sequences of these
 characters: f, d, r, w, x. Dash can appear anywhere in the sequence to mean
 not/negate. An example: `f` means to only show regular files, `-f` means only
 show non-regular files, `drwx` means to show only directories which are
-readable, writable, and executable (cd-able) by the user. `wf|wd` means writable
-regular files or writable directories.
+readable, writable, and executable (cd-able). `wf|wd` means writable regular
+files or writable directories.
 
 For code filter, you supply a coderef. The coderef will be called for each item
 with these arguments: `$name`. It should return true if it wants the item to be
