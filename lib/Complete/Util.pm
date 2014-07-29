@@ -22,6 +22,11 @@ our %SPEC;
 $SPEC{complete_array_elem} = {
     v => 1.1,
     summary => 'Complete from array',
+    description => <<'_',
+
+Will sort the resulting completion list, so you don't have to presort the array.
+
+_
     args => {
         array => { schema=>['array*'=>{of=>'str*'}], pos=>0, req=>1 },
         word  => { schema=>[str=>{default=>''}], pos=>1 },
