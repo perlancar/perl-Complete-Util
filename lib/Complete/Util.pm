@@ -251,6 +251,6 @@ sub complete_file {
 L<Complete>
 
 If you want to do bash tab completion with Perl, take a look at
-L<Complete::Bash> and L<Complete::BashGen>.
+L<Complete::Bash> or L<Getopt::Long::Complete> or L<Perinci::CmdLine>.
 
 Other C<Complete::*> modules.
