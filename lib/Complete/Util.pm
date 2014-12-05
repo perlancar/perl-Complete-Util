@@ -115,6 +115,7 @@ Windows is supported, on Windows PATH will be split using /;/ instead of /:/.
 _
     args => {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
+        ci => { schema=>'bool' },
     },
     result_naked => 1,
     result => {
