@@ -10,6 +10,8 @@ use warnings;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
+                       hashify_answer
+                       arrayify_answer
                        complete_array_elem
                        complete_hash_key
                        complete_env
@@ -18,6 +20,80 @@ our @EXPORT_OK = qw(
                );
 
 our %SPEC;
+
+$SPEC{hashify_answer} = {
+    v => 1.1,
+    summary => 'Make sure we return completion answer in hash form',
+    description => <<'_',
+
+This function accepts a hash or an array. If it receives an array, will convert
+the array into `{words=>$ary}' first to make sure the completion answer is in
+hash form.
+
+Then will add keys from `meta` to the hash.
+
+_
+    args => {
+        arg => {
+            summary => '',
+            schema  => ['any*' => of => ['array*','hash*']],
+            req => 1,
+            pos => 0,
+        },
+        meta => {
+            summary => 'Metadata (extra keys) for the hash',
+            schema  => 'hash*',
+            pos => 1,
+        },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'hash*',
+    },
+};
+sub hashify_answer {
+    my $ans = shift;
+    if (ref($ans) ne 'HASH') {
+        $ans = {words=>$ans};
+    }
+    if (@_) {
+        my $meta = shift;
+        for (keys %$meta) {
+            $ans->{$_} = $meta->{$_};
+        }
+    }
+    $ans;
+}
+
+$SPEC{arrayify_answer} = {
+    v => 1.1,
+    summary => 'Make sure we return completion answer in array form',
+    description => <<'_',
+
+This is the reverse of `hashify_answer`. It accepts a hash or an array. If it
+receives a hash, will return its `words` key.
+
+_
+    args => {
+        arg => {
+            summary => '',
+            schema  => ['any*' => of => ['array*','hash*']],
+            req => 1,
+            pos => 0,
+        },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'array*',
+    },
+};
+sub arrayify_answer {
+    my $ans = shift;
+    if (ref($ans) eq 'HASH') {
+        $ans = $ans->{words};
+    }
+    $ans;
+}
 
 $SPEC{complete_array_elem} = {
     v => 1.1,
