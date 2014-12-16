@@ -21,6 +21,11 @@ our @EXPORT_OK = qw(
 
 our %SPEC;
 
+$SPEC{':package'} = {
+    v => 1.1,
+    summary => 'General completion routine',
+};
+
 $SPEC{hashify_answer} = {
     v => 1.1,
     summary => 'Make sure we return completion answer in hash form',
@@ -402,7 +407,7 @@ sub complete_file {
 # TODO: complete_package (deb, rpm, ...)
 
 1;
-# ABSTRACT: General completion routines
+# ABSTRACT:
 
 =for Pod::Coverage ^(complete_array)$
 
