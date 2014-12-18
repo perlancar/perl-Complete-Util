@@ -48,7 +48,7 @@ subtest "ci" => sub {
     local $ENV{PATH} = "$dir/dir1:$dir/dir2";
 
     is_deeply(complete_program(word=>"prog", ci=>1),
-              [sort("prog1","prog2","prog3","Prog3","Prog4")]);
+              [sort("prog1.bat","prog2.bat","prog3.bat","Prog3","Prog4")]);
 };
 
 done_testing;
