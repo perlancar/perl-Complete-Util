@@ -263,6 +263,8 @@ _
     },
 };
 sub complete_file {
+    require File::Glob;
+
     my %args   = @_;
     my $word   = $args{word} // "";
     my $ci     = $args{ci};
@@ -276,7 +278,7 @@ sub complete_file {
     my $res_num_remove = 0;
     if ($word =~ s!\A(~[^/]*)/!!) {
         $res_prefix = "$1/";
-        my @dir = glob($1); # glob will expand ~foo to /home/foo
+        my @dir = File::Glob::glob($1); # glob will expand ~foo to /home/foo
         return [] unless @dir;
         $search_prefix = $dir[0] =~ m!/\z! ? $dir[0] : "$dir[0]/";
         $res_num_remove = length($search_prefix);
