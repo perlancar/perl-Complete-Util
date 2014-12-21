@@ -12,6 +12,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
                        hashify_answer
                        arrayify_answer
+                       combine_answers
                        complete_array_elem
                        complete_hash_key
                        complete_env
@@ -402,6 +403,85 @@ sub complete_file {
     }
 
     \@res;
+}
+
+$SPEC{combine_answers} = {
+    v => 1.1,
+    summary => 'Given two or more answers, combine them into one',
+    description => <<'_',
+
+This function is useful if you want to provide a completion answer that is
+gathered from multiple sources. For example, say you are providing completion
+for the Perl tool `cpanm`, which accepts a filename (a tarball like `*.tar.gz`),
+a directory, or a module name. You can do something like this:
+
+    combine_answers(
+        complete_file(word=>$word, ci=>1),
+        complete_module(word=>$word, ci=>1),
+    );
+
+_
+    args => {
+        answers => {
+            schema => [
+                'array*' => {
+                    of => ['any*', of=>['hash*','array*']], # XXX answer_t
+                    min_len => 1,
+                },
+            ],
+            req => 1,
+            pos => 0,
+            greedy => 1,
+        },
+    },
+    args_as => 'array',
+    result_naked => 1,
+    result => {
+        schema => 'hash*',
+        description => <<'_',
+
+Return a combined completion answer. Words from each input answer will be
+combined, order preserved and duplicates removed. The other keys from each
+answer will be merged.
+
+_
+    },
+};
+sub combine_answers {
+    require List::Util;
+
+    return undef unless @_;
+    return $_[0] if @_ < 2;
+
+    my $final = {words=>[]};
+    my $encounter_hash;
+    my $add_words = sub {
+        my $words = shift;
+        for my $entry (@$words) {
+            push @{ $final->{words} }, $entry
+                unless List::Util::first(
+                    sub {
+                        (ref($entry) ? $entry->{word} : $entry)
+                            eq
+                                (ref($_) ? $_->{word} : $_)
+                            }, @{ $final->{words} }
+                        );
+        }
+    };
+
+    for my $ans (@_) {
+        if (ref($ans) eq 'ARRAY') {
+            $add_words->($ans);
+        } elsif (ref($ans) eq 'HASH') {
+            $encounter_hash++;
+            $add_words->($ans->{words} // []);
+            for (keys %$ans) {
+                next if $_ eq 'words';
+                $final->{$_} = $ans->{$_};
+            }
+        }
+    }
+    $encounter_hash ? $final : $final->{words};
 }
 
 # TODO: complete_filesystem (probably in a separate module)
