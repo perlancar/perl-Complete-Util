@@ -7,6 +7,8 @@ use 5.010001;
 use strict;
 use warnings;
 
+use Complete;
+
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
@@ -112,7 +114,7 @@ _
     args => {
         array => { schema=>['array*'=>{of=>'str*'}], pos=>0, req=>1 },
         word  => { schema=>[str=>{default=>''}], pos=>1 },
-        ci    => { schema=>[bool=>{default=>0}] },
+        ci    => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -123,7 +125,7 @@ sub complete_array_elem {
     my %args  = @_;
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
-    my $ci    = $args{ci};
+    my $ci    = $args{ci} // $Complete::OPT_CI;
 
     my $wordu = uc($word);
     my @words;
@@ -142,7 +144,7 @@ $SPEC{complete_hash_key} = {
     args => {
         hash  => { schema=>['hash*'=>{}], pos=>0, req=>1 },
         word  => { schema=>[str=>{default=>''}], pos=>1 },
-        ci    => { schema=>[bool=>{default=>0}] },
+        ci    => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -153,7 +155,7 @@ sub complete_hash_key {
     my %args  = @_;
     my $hash  = $args{hash} or die "Please specify hash";
     my $word  = $args{word} // "";
-    my $ci    = $args{ci};
+    my $ci    = $args{ci} // $Complete::OPT_CI;
 
     complete_array_elem(word=>$word, array=>[keys %$hash], ci=>$ci);
 }
@@ -169,7 +171,7 @@ use case-insensitive option (`ci`) to match against original casing.
 _
     args => {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
-        ci    => { schema=>[bool=>{default=>0}] },
+        ci    => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -179,9 +181,10 @@ _
 sub complete_env {
     my %args  = @_;
     my $word  = $args{word} // "";
-    my $ci    = $args{ci};
+    my $ci    = $args{ci} // $Complete::OPT_CI;
     if ($word =~ /^\$/) {
-        complete_array_elem(word=>$word, array=>[map {"\$$_"} keys %ENV], ci=>$ci);
+        complete_array_elem(word=>$word, array=>[map {"\$$_"} keys %ENV],
+                            ci=>$ci);
     } else {
         complete_array_elem(word=>$word, array=>[keys %ENV], ci=>$ci);
     }
@@ -197,7 +200,7 @@ Windows is supported, on Windows PATH will be split using /;/ instead of /:/.
 _
     args => {
         word  => { schema=>[str=>{default=>''}], pos=>0 },
-        ci => { schema=>'bool' },
+        ci    => { schema=>'bool' },
     },
     result_naked => 1,
     result => {
@@ -209,7 +212,7 @@ sub complete_program {
 
     my %args = @_;
     my $word = $args{word} // "";
-    my $ci   = $args{ci};
+    my $ci   = $args{ci} // $Complete::OPT_CI;
 
     my $word_re = $ci ? qr/\A\Q$word/i : qr/\A\Q$word/;
 
@@ -268,7 +271,7 @@ sub complete_file {
 
     my %args   = @_;
     my $word   = $args{word} // "";
-    my $ci     = $args{ci};
+    my $ci     = $args{ci} // $Complete::OPT_CI;
     my $filter = $args{filter};
 
     # if word is starts with "~/" or "~foo/" replace it temporarily with user's
