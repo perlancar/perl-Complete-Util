@@ -112,8 +112,8 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        array => { schema=>['array*'=>{of=>'str*'}], pos=>0, req=>1 },
-        word  => { schema=>[str=>{default=>''}], pos=>1 },
+        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        array => { schema=>['array*'=>{of=>'str*'}], req=>1 },
         ci    => { schema=>['bool'] },
     },
     result_naked => 1,
@@ -142,8 +142,8 @@ $SPEC{complete_hash_key} = {
     v => 1.1,
     summary => 'Complete from hash keys',
     args => {
-        hash  => { schema=>['hash*'=>{}], pos=>0, req=>1 },
-        word  => { schema=>[str=>{default=>''}], pos=>1 },
+        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        hash  => { schema=>['hash*'=>{}], req=>1 },
         ci    => { schema=>['bool'] },
     },
     result_naked => 1,
@@ -170,7 +170,7 @@ use case-insensitive option (`ci`) to match against original casing.
 
 _
     args => {
-        word  => { schema=>[str=>{default=>''}], pos=>0 },
+        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
         ci    => { schema=>['bool'] },
     },
     result_naked => 1,
@@ -199,7 +199,7 @@ Windows is supported, on Windows PATH will be split using /;/ instead of /:/.
 
 _
     args => {
-        word  => { schema=>[str=>{default=>''}], pos=>0 },
+        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
         ci    => { schema=>'bool' },
     },
     result_naked => 1,
@@ -234,6 +234,7 @@ $SPEC{complete_file} = {
     args => {
         word => {
             schema  => [str=>{default=>''}],
+            req     => 1,
             pos     => 0,
         },
         ci => {
