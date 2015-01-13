@@ -247,6 +247,9 @@ $SPEC{complete_file} = {
         exp_im_path => {
             schema  => 'bool',
         },
+        dig_leaf => {
+            schema  => 'bool',
+        },
         filter => {
             summary => 'Only return items matching this filter',
             description => <<'_',
@@ -282,6 +285,7 @@ sub complete_file {
     my $ci          = $args{ci} // $Complete::OPT_CI;
     my $map_case    = $args{map_case} // $Complete::OPT_MAP_CASE;
     my $exp_im_path = $args{exp_im_path} // $Complete::OPT_EXP_IM_PATH;
+    my $dig_leaf    = $args{dig_leaf} // $Complete::OPT_DIG_LEAF;
     my $filter = $args{filter};
 
     # if word is starts with "~/" or "~foo/" replace it temporarily with user's
@@ -345,7 +349,12 @@ sub complete_file {
 
     Complete::Path::complete_path(
         word => $word,
-        ci => $ci, map_case => $map_case, exp_im_path => $exp_im_path,
+
+        ci => $ci,
+        map_case => $map_case,
+        exp_im_path => $exp_im_path,
+        dig_leaf => $dig_leaf,
+
         list_func => $list,
         is_dir_func => sub { -d $_[0] },
         filter_func => $filter,
