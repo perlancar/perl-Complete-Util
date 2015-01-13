@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.22    2015-01-13 (PERLANCAR)
+
+        - Adjust to Complete 0.11, Complete::Path 0.12.
+
+        - Add option: dig_leaf.
+
+
 0.21    2014-12-27 (PERLANCAR)
 
 	- No functional changes.
