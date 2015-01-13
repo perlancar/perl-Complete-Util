@@ -285,6 +285,7 @@ sub complete_file {
     my $ci          = $args{ci} // $Complete::OPT_CI;
     my $map_case    = $args{map_case} // $Complete::OPT_MAP_CASE;
     my $exp_im_path = $args{exp_im_path} // $Complete::OPT_EXP_IM_PATH;
+    my $dig_leaf    = $args{dig_leaf} // $Complete::OPT_DIG_LEAF;
     my $filter = $args{filter};
 
     # if word is starts with "~/" or "~foo/" replace it temporarily with user's
