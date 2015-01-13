@@ -13,6 +13,8 @@ use Complete::Util qw(complete_file);
 sub mkfiles { do { open my($fh), ">$_" or die "Can't mkfile $_" } for @_ }
 sub mkdirs  { do { mkdir $_ or die "Can't mkdir $_" } for @_ }
 
+local $Complete::OPT_DIG_LEAF = 0;
+
 my $rootdir = tempdir(CLEANUP=>1);
 $CWD = $rootdir;
 mkfiles(qw(a ab abc ac bb d .h1));
