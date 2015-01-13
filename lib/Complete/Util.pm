@@ -247,6 +247,9 @@ $SPEC{complete_file} = {
         exp_im_path => {
             schema  => 'bool',
         },
+        dig_leaf => {
+            schema  => 'bool',
+        },
         filter => {
             summary => 'Only return items matching this filter',
             description => <<'_',
@@ -345,7 +348,12 @@ sub complete_file {
 
     Complete::Path::complete_path(
         word => $word,
-        ci => $ci, map_case => $map_case, exp_im_path => $exp_im_path,
+
+        ci => $ci,
+        map_case => $map_case,
+        exp_im_path => $exp_im_path,
+        dig_leaf => $dig_leaf,
+
         list_func => $list,
         is_dir_func => sub { -d $_[0] },
         filter_func => $filter,
