@@ -30,6 +30,22 @@ test_complete(
     result    => [qw()],
     result_ci => [qw(An)],
 );
+
+test_complete(
+    name      => 'opt:exclude',
+    word      => 'a',
+    array     => [qw(an apple a day keeps the doctor away)],
+    exclude   => [qw(a apple foo)],
+    result    => [qw(an away)],
+);
+test_complete(
+    name      => 'opt:exclude (ci)',
+    word      => 'a',
+    array     => [qw(an apple a day keeps the doctor away)],
+    exclude   => [qw(A Apple foo)],
+    result    => [qw(a an apple away)],
+    result_ci => [qw(an away)],
+);
 done_testing();
 
 sub test_complete {
@@ -37,12 +53,13 @@ sub test_complete {
 
     my $name = $args{name} // $args{word};
     my $res = complete_array_elem(
-        word=>$args{word}, array=>$args{array}, ci=>0);
+        word=>$args{word}, array=>$args{array}, exclude=>$args{exclude}, ci=>0);
     is_deeply($res, $args{result}, "$name (result)")
         or diag explain($res);
     if ($args{result_ci}) {
         my $res_ci = complete_array_elem(
-            word=>$args{word}, array=>$args{array}, ci=>1);
+            word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
+            ci=>1);
         is_deeply($res_ci, $args{result_ci}, "$name (result_ci)")
             or diag explain($res_ci);
     }

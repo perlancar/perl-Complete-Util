@@ -112,9 +112,10 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
-        array => { schema=>['array*'=>{of=>'str*'}], req=>1 },
-        ci    => { schema=>['bool'] },
+        word    => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        array   => { schema=>['array*'=>{of=>'str*'}], req=>1 },
+        ci      => { schema=>['bool'] },
+        exclude => { schema=>['array*'] },
     },
     result_naked => 1,
     result => {
@@ -122,15 +123,29 @@ _
     },
 };
 sub complete_array_elem {
+    use experimental 'smartmatch';
+
     my %args  = @_;
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
     my $ci    = $args{ci} // $Complete::OPT_CI;
 
+    my $has_exclude = $args{exclude};
+    my $exclude;
+    if ($ci) {
+        $exclude = [map {uc} @{ $args{exclude} // [] }];
+    } else {
+        $exclude = $args{exclude} // [];
+    }
+
     my $wordu = uc($word);
     my @words;
     for (@$array) {
-        next unless 0==($ci ? index(uc($_), $wordu) : index($_, $word));
+        my $uc = uc($_) if $ci;
+        next unless 0==($ci ? index($uc, $wordu) : index($_, $word));
+        if ($has_exclude) {
+            next if ($ci ? $uc : $_) ~~ @$exclude;
+        }
         push @words, $_;
     }
     $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
