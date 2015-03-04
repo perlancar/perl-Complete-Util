@@ -119,6 +119,10 @@ subtest "opt: map_case" => sub {
 # XXX test /abs
 # XXX test ~/blah and ~user/blah
 
+# XXX test opt: starting_path
+# XXX test opt: allow_dot=0
+# XXX test opt: handle_tilde=0
+
 DONE_TESTING:
 $CWD = "/";
 done_testing();

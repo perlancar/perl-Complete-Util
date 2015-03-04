@@ -285,6 +285,25 @@ included.
 _
             schema  => ['any*' => {of => ['str*', 'code*']}],
         },
+        starting_path => {
+            schema  => 'str*',
+            default => '.',
+        },
+        handle_tilde => {
+            schema  => 'bool',
+            default => 1,
+        },
+        allow_dot => {
+            summary => 'If turned off, will not allow "." or ".." in path',
+            description => <<'_',
+
+This is most useful when combined with `starting_path` option to prevent user
+going up/outside the starting path.
+
+_
+            schema  => 'bool',
+            default => 1,
+        },
     },
     result_naked => 1,
     result => {
@@ -301,24 +320,30 @@ sub complete_file {
     my $map_case    = $args{map_case} // $Complete::OPT_MAP_CASE;
     my $exp_im_path = $args{exp_im_path} // $Complete::OPT_EXP_IM_PATH;
     my $dig_leaf    = $args{dig_leaf} // $Complete::OPT_DIG_LEAF;
+    my $handle_tilde = $args{handle_tilde} // 1;
+    my $allow_dot   = $args{allow_dot} // 1;
     my $filter = $args{filter};
 
     # if word is starts with "~/" or "~foo/" replace it temporarily with user's
     # name (so we can restore it back at the end). this is to mimic bash
     # support. note that bash does not support case-insensitivity for "foo".
     my $result_prefix;
-    my $starting_path = '.';
-    if ($word =~ s!\A(~[^/]*)/!!) {
+    my $starting_path = $args{starting_path} // '.';
+    if ($args{handle_tilde} && $word =~ s!\A(~[^/]*)/!!) {
         $result_prefix = "$1/";
         my @dir = File::Glob::glob($1); # glob will expand ~foo to /home/foo
         return [] unless @dir;
         $starting_path = $dir[0];
-    } elsif ($word =~ s!\A((?:\.\.?/+)+|/+)!!) {
+    } elsif ($allow_dot && $word =~ s!\A((?:\.\.?/+)+|/+)!!) {
         # just an optimization to skip sequences of '../'
         $starting_path = $1;
         $result_prefix = $1;
         $starting_path =~ s#/+\z## unless $starting_path =~ m!\A/!;
     }
+
+    # bail if we don't allow dot and the path contains dot
+    return [] if !$allow_dot &&
+        $word =~ m!(?:\A|/)\.\.?(?:\z|/)!;
 
     # prepare list_func
     my $list = sub {
