@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.24    2015-03-04 (PERLANCAR)
+
+	- Follow Complete 0.12 (escmode renamed to esc_mode).
+
+
 0.23    2015-03-03 (PERLANCAR)
 
 	- Add option 'exclude' to complete_array_elem().
