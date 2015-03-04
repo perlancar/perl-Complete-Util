@@ -30,14 +30,14 @@ test_combine(
     name   => 'arrays + hashes',
     input  => [
         [1, 2],
-        {words=>[4, 2, 3], path_sep=>'::', escmode=>'none'},
+        {words=>[4, 2, 3], path_sep=>'::', esc_mode=>'none'},
         [{word=>5, description=>"five"}],
         {words=>[5, 7], path_sep=>'/'},
     ],
     result => {
         words => [1, 2, 4, 3, {word=>5, description=>"five"}, 7],
         path_sep => '/',
-        escmode => 'none',
+        esc_mode => 'none',
     },
 );
 
