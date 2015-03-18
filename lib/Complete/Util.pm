@@ -329,7 +329,7 @@ sub complete_file {
     # support. note that bash does not support case-insensitivity for "foo".
     my $result_prefix;
     my $starting_path = $args{starting_path} // '.';
-    if ($args{handle_tilde} && $word =~ s!\A(~[^/]*)/!!) {
+    if ($handle_tilde && $word =~ s!\A(~[^/]*)/!!) {
         $result_prefix = "$1/";
         my @dir = File::Glob::glob($1); # glob will expand ~foo to /home/foo
         return [] unless @dir;
