@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.26    2015-03-30 (PERLANCAR)
+
+	- Handle combining static in combine_answers().
+
+
 0.25    2015-03-18 (PERLANCAR)
 
         - Add options to complete_file(): starting_path, handle_tilde,
