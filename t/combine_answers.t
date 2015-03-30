@@ -41,6 +41,23 @@ test_combine(
     },
 );
 
+subtest "hashes" => sub {
+    test_combine(
+        name   => 'static stays 1 if all answer have static=1',
+        input  => [{static=>1, words=>[1,2]},
+                   {static=>1, words=>[3]},
+                   {static=>1, words=>[4,5]}],
+        result => {static=>1, words=>[1,2,3,4,5]},
+    );
+    test_combine(
+        name   => 'static becomes 0 if any answer has static=0',
+        input  => [{static=>1, words=>[1,2]},
+                   {static=>1, words=>[3]},
+                   {static=>0, words=>[4,5]}],
+        result => {static=>0, words=>[1,2,3,4,5]},
+    );
+};
+
 done_testing();
 
 sub test_combine {

@@ -474,8 +474,17 @@ sub combine_answers {
             $encounter_hash++;
             $add_words->($ans->{words} // []);
             for (keys %$ans) {
-                next if $_ eq 'words';
-                $final->{$_} = $ans->{$_};
+                if ($_ eq 'words') {
+                    next;
+                } elsif ($_ eq 'static') {
+                    if (exists $final->{$_}) {
+                        $final->{$_} &&= $ans->{$_};
+                    } else {
+                        $final->{$_} = $ans->{$_};
+                    }
+                } else {
+                    $final->{$_} = $ans->{$_};
+                }
             }
         }
     }
