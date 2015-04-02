@@ -246,6 +246,9 @@ sub complete_program {
 $SPEC{complete_file} = {
     v => 1.1,
     summary => 'Complete file and directory from local filesystem',
+    args_groups => [
+        {rel=>'one_of', args=>[qw/filter file_regex_filter/]},
+    ],
     args => {
         word => {
             schema  => [str=>{default=>''}],
@@ -284,6 +287,17 @@ included.
 
 _
             schema  => ['any*' => {of => ['str*', 'code*']}],
+        },
+        file_regex_filter => {
+            summary => 'Filter shortcut for file regex',
+            description => <<'_',
+
+This is a shortcut for constructing a filter. So instead of using `filter`, you
+use this option. This will construct a filter of including only directories or
+regular files, and the file must match a regex pattern. This use-case is common.
+
+_
+            schema => 're*',
         },
         starting_path => {
             schema  => 'str*',
@@ -384,6 +398,14 @@ sub complete_file {
                 $pass = 1; last SEQ;
             }
             $pass;
+        };
+    } elsif (!$filter && $args{file_regex_filter}) {
+        $filter = sub {
+            my $name = shift;
+            return 1 if -d $name;
+            return 0 unless -f _;
+            return 1 if $name =~ $args{file_regex_filter};
+            0;
         };
     }
 
