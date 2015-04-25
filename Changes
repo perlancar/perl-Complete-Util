@@ -1,5 +1,11 @@
 Revision history for Complete-Util
 
+0.29    2015-04-25 (PERLANCAR)
+
+	- combine_answers(): Re-sort final words to be more deterministic &
+	  testable.
+
+
 0.28    2015-04-25 (PERLANCAR)
 
 	- combine_answers(): Interpret 'final' metadata in completion
