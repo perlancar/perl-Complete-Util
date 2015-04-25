@@ -58,6 +58,24 @@ subtest "hashes" => sub {
     );
 };
 
+subtest "final" => sub {
+    test_combine(
+        name   => 'one of the answers has final=1 -> combined answer is only that single answer',
+        input  => [ [1,2,3], {final=>1, words=>[4,5]} ],
+        result => {final=>1, words=>[4,5]},
+    );
+    test_combine(
+        name   => 'one of the answers has final=1 -> combined answer is only that single answer (2)',
+        input  => [ {final=>1, words=>[4,5]}, [1,2,3] ],
+        result => {final=>1, words=>[4,5]},
+    );
+    test_combine(
+        name   => 'one of the answers has final=1 -> combined answer is only that single answer (2)',
+        input  => [ {final=>1, words=>[4,5]}, {final=>1, words=>[1,2,3]} ],
+        result => {final=>1, words=>[4,5]},
+    );
+};
+
 done_testing();
 
 sub test_combine {

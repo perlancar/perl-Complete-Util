@@ -440,6 +440,9 @@ a directory, or a module name. You can do something like this:
         complete_module(word=>$word, ci=>1),
     );
 
+If a completion answer has a metadata `final` set to true, then that answer is
+used as the final answer without any combining with the other answers.
+
 _
     args => {
         answers => {
@@ -489,11 +492,18 @@ sub combine_answers {
         }
     };
 
+  ANSWER:
     for my $ans (@_) {
         if (ref($ans) eq 'ARRAY') {
             $add_words->($ans);
         } elsif (ref($ans) eq 'HASH') {
             $encounter_hash++;
+
+            if ($ans->{final}) {
+                $final = $ans;
+                last ANSWER;
+            }
+
             $add_words->($ans->{words} // []);
             for (keys %$ans) {
                 if ($_ eq 'words') {
