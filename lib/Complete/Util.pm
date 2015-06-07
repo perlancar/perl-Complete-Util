@@ -246,9 +246,9 @@ sub complete_program {
 $SPEC{complete_file} = {
     v => 1.1,
     summary => 'Complete file and directory from local filesystem',
-    args_groups => [
-        {rel=>'one_of', args=>[qw/filter file_regex_filter/]},
-    ],
+    args_rels => {
+        choose_one => [qw/filter file_regex_filter/],
+    },
     args => {
         word => {
             schema  => [str=>{default=>''}],
