@@ -1,5 +1,13 @@
 Revision history for Complete-Util
 
+0.30    2015-06-07 (PERLANCAR)
+
+	- No functional changes.
+
+	- Skip test when we cannot set $^O temporarily (just my guess)
+	  [RT#104981].
+
+
 0.29    2015-04-25 (PERLANCAR)
 
 	- combine_answers(): Re-sort final words to be more deterministic &
