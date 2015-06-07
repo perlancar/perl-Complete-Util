@@ -1,7 +1,5 @@
 #!perl
 
-# TODO
-
 use 5.010;
 use strict;
 use warnings;
@@ -21,16 +19,20 @@ mkexe("$dir/dir1/prog1.bat");
 mkexe("$dir/dir1/prog2.bat");
 mkexe("$dir/dir2/prog3.bat");
 
-{
+subtest "unix/colon-separated PATH" => sub {
     local $^O = 'linux';
+    plan skip_all => 'cannot temporarily set $^O variable' unless $^O =~ /linux/;
+
     local $ENV{PATH} = "$dir/dir1:$dir/dir2";
     is_deeply(complete_program(word=>"prog"), ["prog1.bat","prog2.bat","prog3.bat"]);
     is_deeply(complete_program(word=>"prog3"), ["prog3.bat"]);
     is_deeply(complete_program(word=>"prog9"), []);
-}
+};
 
-subtest "win support" => sub {
+subtest "win/semicolon-separated PATH" => sub {
     local $^O = 'MSWin32';
+    plan skip_all => 'cannot temporarily set $^O variable' unless $^O =~ /Win32/;
+
     local $ENV{PATH} = "$dir/dir1;$dir/dir2";
     is_deeply(complete_program(word=>"prog"), ["prog1.bat","prog2.bat","prog3.bat"]);
     is_deeply(complete_program(word=>"prog3"), ["prog3.bat"]);
