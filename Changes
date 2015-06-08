@@ -1,5 +1,14 @@
 Revision history for Complete-Util
 
+0.31    2015-06-08 (PERLANCAR)
+
+	- No functional changes.
+
+	- Previous guess about $^O not being properly localized was
+	  incorrect, the test failures on Windows were caused by path
+	  containing /:/ (thanks kmx).
+
+
 0.30    2015-06-07 (PERLANCAR)
 
 	- No functional changes.
