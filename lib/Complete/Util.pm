@@ -123,8 +123,6 @@ _
     },
 };
 sub complete_array_elem {
-    use experimental 'smartmatch';
-
     my %args  = @_;
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
@@ -140,13 +138,13 @@ sub complete_array_elem {
 
     my $wordu = uc($word);
     my @words;
-    for (@$array) {
-        my $uc = uc($_) if $ci;
-        next unless 0==($ci ? index($uc, $wordu) : index($_, $word));
+    for my $el (@$array) {
+        my $uc = uc($el) if $ci;
+        next unless 0==($ci ? index($uc, $wordu) : index($el, $word));
         if ($has_exclude) {
-            next if ($ci ? $uc : $_) ~~ @$exclude;
+            next if grep {($ci ? $uc : $el) eq $_} @$exclude;
         }
-        push @words, $_;
+        push @words, $el;
     }
     $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
 }
