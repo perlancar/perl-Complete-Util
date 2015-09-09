@@ -7,7 +7,7 @@ use 5.010001;
 use strict;
 use warnings;
 
-use Complete;
+use Complete::Setting;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -126,7 +126,7 @@ sub complete_array_elem {
     my %args  = @_;
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
-    my $ci    = $args{ci} // $Complete::OPT_CI;
+    my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
 
     my $has_exclude = $args{exclude};
     my $exclude;
@@ -168,7 +168,7 @@ sub complete_hash_key {
     my %args  = @_;
     my $hash  = $args{hash} or die "Please specify hash";
     my $word  = $args{word} // "";
-    my $ci    = $args{ci} // $Complete::OPT_CI;
+    my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
 
     complete_array_elem(word=>$word, array=>[keys %$hash], ci=>$ci);
 }
@@ -194,7 +194,7 @@ _
 sub complete_env {
     my %args  = @_;
     my $word  = $args{word} // "";
-    my $ci    = $args{ci} // $Complete::OPT_CI;
+    my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
     if ($word =~ /^\$/) {
         complete_array_elem(word=>$word, array=>[map {"\$$_"} keys %ENV],
                             ci=>$ci);
@@ -225,7 +225,7 @@ sub complete_program {
 
     my %args = @_;
     my $word = $args{word} // "";
-    my $ci   = $args{ci} // $Complete::OPT_CI;
+    my $ci   = $args{ci} // $Complete::Setting::OPT_CI;
 
     my $word_re = $ci ? qr/\A\Q$word/i : qr/\A\Q$word/;
 
@@ -328,10 +328,10 @@ sub complete_file {
 
     my %args   = @_;
     my $word   = $args{word} // "";
-    my $ci          = $args{ci} // $Complete::OPT_CI;
-    my $map_case    = $args{map_case} // $Complete::OPT_MAP_CASE;
-    my $exp_im_path = $args{exp_im_path} // $Complete::OPT_EXP_IM_PATH;
-    my $dig_leaf    = $args{dig_leaf} // $Complete::OPT_DIG_LEAF;
+    my $ci          = $args{ci} // $Complete::Setting::OPT_CI;
+    my $map_case    = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
+    my $exp_im_path = $args{exp_im_path} // $Complete::Setting::OPT_EXP_IM_PATH;
+    my $dig_leaf    = $args{dig_leaf} // $Complete::Setting::OPT_DIG_LEAF;
     my $handle_tilde = $args{handle_tilde} // 1;
     my $allow_dot   = $args{allow_dot} // 1;
     my $filter = $args{filter};
