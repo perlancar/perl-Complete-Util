@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.35    2015-09-12 (PERLANCAR)
+
+	- Add fuzzy matching to complete_array_elem().
+
+
 0.34    2015-09-09 (PERLANCAR)
 
 	- No functional changes.
