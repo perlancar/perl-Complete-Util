@@ -189,7 +189,7 @@ sub complete_array_elem {
                 my $chopped = substr(($ci ? uc($el):$el), 0, $l);
                 my $d;
                 unless (defined $editdists{$chopped}) {
-                    $d = __editdist($word, $chopped);
+                    $d = __editdist(($ci ? $wordu:$word), $chopped);
                     $editdists{$chopped} = $d;
                 } else {
                     $d = $editdists{$chopped};
@@ -198,7 +198,7 @@ sub complete_array_elem {
                     __min(length($chopped), length($word))/$factor,
                     $fuzzy,
                 );
-                #say "D: d($word,$chopped)=$d (maxd=$maxd)";
+                #say "D: d(".($ci ? $wordu:$word).",$chopped)=$d (maxd=$maxd)";
                 next unless $d <= $maxd;
                 push @words, $el;
                 next ELEM;
