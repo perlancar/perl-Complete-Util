@@ -103,6 +103,42 @@ sub arrayify_answer {
     $ans;
 }
 
+sub __min(@) {
+    my $m = $_[0];
+    for (@_) {
+        $m = $_ if $_ < $m;
+    }
+    $m;
+}
+
+# straight copy of Wikipedia's "Levenshtein Distance"
+sub __editdist {
+    my @a = split //, shift;
+    my @b = split //, shift;
+
+    # There is an extra row and column in the matrix. This is the distance from
+    # the empty string to a substring of the target.
+    my @d;
+    $d[$_][0] = $_ for 0 .. @a;
+    $d[0][$_] = $_ for 0 .. @b;
+
+    for my $i (1 .. @a) {
+        for my $j (1 .. @b) {
+            $d[$i][$j] = (
+                $a[$i-1] eq $b[$j-1]
+                    ? $d[$i-1][$j-1]
+                    : 1 + __min(
+                        $d[$i-1][$j],
+                        $d[$i][$j-1],
+                        $d[$i-1][$j-1]
+                    )
+                );
+        }
+    }
+
+    $d[@a][@b];
+}
+
 $SPEC{complete_array_elem} = {
     v => 1.1,
     summary => 'Complete from array',
@@ -116,6 +152,7 @@ _
         array   => { schema=>['array*'=>{of=>'str*'}], req=>1 },
         ci      => { schema=>['bool'] },
         exclude => { schema=>['array*'] },
+        fuzzy   => { schema=>['int*', min=>0] },
     },
     result_naked => 1,
     result => {
@@ -127,26 +164,57 @@ sub complete_array_elem {
     my $array = $args{array} or die "Please specify array";
     my $word  = $args{word} // "";
     my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
+    my $fuzzy = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
 
-    my $has_exclude = $args{exclude};
-    my $exclude;
-    if ($ci) {
-        $exclude = [map {uc} @{ $args{exclude} // [] }];
-    } else {
-        $exclude = $args{exclude} // [];
-    }
+    return [] unless @$array;
 
     my $wordu = uc($word);
     my @words;
     for my $el (@$array) {
         my $uc = uc($el) if $ci;
         next unless 0==($ci ? index($uc, $wordu) : index($el, $word));
-        if ($has_exclude) {
-            next if grep {($ci ? $uc : $el) eq $_} @$exclude;
-        }
         push @words, $el;
     }
-    $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
+
+    if ($fuzzy && !@words) {
+        my $factor = 1.3;
+        my $x = -1;
+        my $y = 1;
+
+        my %editdists;
+      ELEM:
+        for my $el (@$array) {
+            for my $l (length($word)-$y .. length($word)+$y) {
+                next if $l <= 0;
+                my $chopped = substr(($ci ? uc($el):$el), 0, $l);
+                my $d;
+                unless (defined $editdists{$chopped}) {
+                    $d = __editdist($word, $chopped);
+                    $editdists{$chopped} = $d;
+                } else {
+                    $d = $editdists{$chopped};
+                }
+                my $maxd = __min(
+                    __min(length($chopped), length($word))/$factor,
+                    $fuzzy,
+                );
+                #say "D: d($word,$chopped)=$d (maxd=$maxd)";
+                next unless $d <= $maxd;
+                push @words, $el;
+                next ELEM;
+            }
+        }
+    }
+
+    if ($args{exclude}) {
+        my $exclude = $ci ? [map {uc} @{ $args{exclude} }] : $args{exclude};
+        @words = grep {
+            my $w = $_;
+            !(grep {($ci ? uc($w) : $w) eq $_} @$exclude);
+        } @words;
+    }
+
+    return $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
 }
 
 *complete_array = \&complete_array_elem;
