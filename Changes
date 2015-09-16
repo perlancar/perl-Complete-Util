@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.36    2015-09-16 (PERLANCAR)
+
+	- [Removed] Split complete_file, complete_env, complete_program to
+	  their own dists, for better modularity and avoid circular
+	  dependencies.
+
+
 0.35    2015-09-12 (PERLANCAR)
 
 	- Add fuzzy matching to complete_array_elem().
