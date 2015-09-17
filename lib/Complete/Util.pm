@@ -228,9 +228,11 @@ $SPEC{complete_hash_key} = {
     v => 1.1,
     summary => 'Complete from hash keys',
     args => {
-        word  => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
-        hash  => { schema=>['hash*'=>{}], req=>1 },
-        ci    => { schema=>['bool'] },
+        word     => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        hash     => { schema=>['hash*'=>{}], req=>1 },
+        ci       => { schema=>['bool'] },
+        fuzzy    => { schema=>['int*', min=>0] },
+        map_case => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -239,11 +241,18 @@ $SPEC{complete_hash_key} = {
 };
 sub complete_hash_key {
     my %args  = @_;
-    my $hash  = $args{hash} or die "Please specify hash";
-    my $word  = $args{word} // "";
-    my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
+    my $hash     = $args{hash} or die "Please specify hash";
+    my $word     = $args{word} // "";
+    my $ci       = $args{ci} // $Complete::Setting::OPT_CI;
+    my $fuzzy    = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
+    my $map_case = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
 
-    complete_array_elem(word=>$word, array=>[keys %$hash], ci=>$ci);
+    my @array = $ci ?
+        (sort {uc($a) cmp uc($b)} keys %$hash) : (sort keys %$hash);
+    complete_array_elem(
+        word=>$word, array=>\@array,
+        ci=>$ci, fuzzy=>$fuzzy, map_case=>$map_case,
+    );
 }
 
 $SPEC{combine_answers} = {
