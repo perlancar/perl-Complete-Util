@@ -367,8 +367,6 @@ sub combine_answers {
 1;
 # ABSTRACT:
 
-=for Pod::Coverage ^(complete_array)$
-
 =head1 DESCRIPTION
 
 
