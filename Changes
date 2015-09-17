@@ -1,5 +1,15 @@
 Revision history for Complete-Util
 
+0.37    2015-09-17 (PERLANCAR)
+
+        - [Removed] Remove alias complete_array() which has been deprecated
+          since 0.12.
+
+        - Add map_case option for complete_array_elem() & complete_hash_key().
+
+        - Add fuzzy option for complete_hash_key().
+
+
 0.36    2015-09-16 (PERLANCAR)
 
 	- [Removed] Split complete_file, complete_env, complete_program to
