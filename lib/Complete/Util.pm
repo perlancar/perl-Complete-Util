@@ -145,11 +145,15 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        word    => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
-        array   => { schema=>['array*'=>{of=>'str*'}], req=>1 },
-        ci      => { schema=>['bool'] },
-        exclude => { schema=>['array*'] },
-        fuzzy   => { schema=>['int*', min=>0] },
+        word     => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        array    => { schema=>['array*'=>{of=>'str*'}], req=>1 },
+        ci       => { schema=>['bool'] },
+        exclude  => { schema=>['array*'] },
+        fuzzy    => { schema=>['int*', min=>0] },
+        map_case => {
+            summary => 'Treat _ (underscore) and - (dash) as the same',
+            schema  => ['bool'],
+        },
     },
     result_naked => 1,
     result => {
@@ -158,18 +162,21 @@ _
 };
 sub complete_array_elem {
     my %args  = @_;
-    my $array = $args{array} or die "Please specify array";
-    my $word  = $args{word} // "";
-    my $ci    = $args{ci} // $Complete::Setting::OPT_CI;
-    my $fuzzy = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
+    my $array    = $args{array} or die "Please specify array";
+    my $word     = $args{word} // "";
+    my $ci       = $args{ci} // $Complete::Setting::OPT_CI;
+    my $fuzzy    = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
+    my $map_case = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
 
     return [] unless @$array;
 
-    my $wordu = uc($word);
+    # normalize
+    my $wordn = $ci ? uc($word) : $word; $wordn =~ s/_/-/g if $map_case;
+
     my @words;
     for my $el (@$array) {
-        my $uc = uc($el) if $ci;
-        next unless 0==($ci ? index($uc, $wordu) : index($el, $word));
+        my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+        next unless 0==index($eln, $wordn);
         push @words, $el;
     }
 
@@ -181,12 +188,13 @@ sub complete_array_elem {
         my %editdists;
       ELEM:
         for my $el (@$array) {
-            for my $l (length($word)-$y .. length($word)+$y) {
+            my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+            for my $l (length($wordn)-$y .. length($wordn)+$y) {
                 next if $l <= 0;
-                my $chopped = substr(($ci ? uc($el):$el), 0, $l);
+                my $chopped = substr($eln, 0, $l);
                 my $d;
                 unless (defined $editdists{$chopped}) {
-                    $d = __editdist(($ci ? $wordu:$word), $chopped);
+                    $d = __editdist($wordn, $chopped);
                     $editdists{$chopped} = $d;
                 } else {
                     $d = $editdists{$chopped};

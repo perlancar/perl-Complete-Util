@@ -49,6 +49,33 @@ test_complete(
     result_ci => [qw(an away)],
 );
 
+subtest "opt:map_case" => sub {
+    test_complete(
+        name      => 'opt:map_case=0',
+        word      => 'a-',
+        map_case  => 0,
+        array     => [qw(a-1 A-2 a_3 A_4)],
+        result    => [qw(a-1)],
+        result_ci => [qw(a-1 A-2)],
+    );
+    test_complete(
+        name      => 'opt:map_case=1 (1)',
+        word      => 'a-',
+        map_case  => 1,
+        array     => [qw(a-1 A-2 a_3 A_4)],
+        result    => [qw(a-1 a_3)],
+        result_ci => [qw(a-1 A-2 a_3 A_4)],
+    );
+    test_complete(
+        name      => 'opt:map_case=1 (2)',
+        word      => 'a_',
+        map_case  => 1,
+        array     => [qw(a-1 A-2 a_3 A_4)],
+        result    => [qw(a-1 a_3)],
+        result_ci => [qw(a-1 A-2 a_3 A_4)],
+    );
+};
+
 {
     test_complete(
         name      => 'opt:fuzzy',
@@ -67,12 +94,14 @@ sub test_complete {
 
     my $name = $args{name} // $args{word};
     my $res = complete_array_elem(
-        word=>$args{word}, array=>$args{array}, exclude=>$args{exclude}, fuzzy=>$args{fuzzy}, ci=>0);
+        word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
+        fuzzy=>$args{fuzzy}, ci=>0, map_case=>$args{map_case});
     is_deeply($res, $args{result}, "$name (result)")
         or diag explain($res);
     if ($args{result_ci}) {
         my $res_ci = complete_array_elem(
-            word=>$args{word}, array=>$args{array}, exclude=>$args{exclude}, fuzzy=>$args{fuzzy}, ci=>1);
+            word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
+            fuzzy=>$args{fuzzy}, ci=>1, map_case=>$args{map_case});
         is_deeply($res_ci, $args{result_ci}, "$name (result_ci)")
             or diag explain($res_ci);
     }
