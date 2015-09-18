@@ -161,7 +161,16 @@ _
     },
 };
 sub complete_array_elem {
+    state $code_editdist = do {
+        if (eval { require Text::Levenshtein::XS; 1 }) {
+            \&Text::Levenshtein::XS::distance;
+        } else {
+            \&__editdist;
+        }
+    };
+
     my %args  = @_;
+
     my $array    = $args{array} or die "Please specify array";
     my $word     = $args{word} // "";
     my $ci       = $args{ci} // $Complete::Setting::OPT_CI;
@@ -194,7 +203,7 @@ sub complete_array_elem {
                 my $chopped = substr($eln, 0, $l);
                 my $d;
                 unless (defined $editdists{$chopped}) {
-                    $d = __editdist($wordn, $chopped);
+                    $d = $code_editdist->($wordn, $chopped);
                     $editdists{$chopped} = $d;
                 } else {
                     $d = $editdists{$chopped};
