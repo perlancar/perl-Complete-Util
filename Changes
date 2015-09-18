@@ -1,5 +1,11 @@
 Revision history for Complete-Util
 
+0.38    2015-09-18 (PERLANCAR)
+
+	- Use Text::Levenshtein::XS if available, for faster fuzzy
+	  matching.
+
+
 0.37    2015-09-17 (PERLANCAR)
 
         - [Removed] Remove alias complete_array() which has been deprecated

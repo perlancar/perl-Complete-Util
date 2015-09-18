@@ -231,8 +231,6 @@ sub complete_array_elem {
     return $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
 }
 
-*complete_array = \&complete_array_elem;
-
 $SPEC{complete_hash_key} = {
     v => 1.1,
     summary => 'Complete from hash keys',
