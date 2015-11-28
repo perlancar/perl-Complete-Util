@@ -145,12 +145,31 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        word     => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
-        array    => { schema=>['array*'=>{of=>'str*'}], req=>1 },
-        ci       => { schema=>['bool'] },
-        exclude  => { schema=>['array*'] },
-        fuzzy    => { schema=>['int*', min=>0] },
-        map_case => {
+        word      => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        array     => { schema=>['array*'=>{of=>'str*'}], req=>1 },
+        ci        => {
+            schema=>['bool'],
+        },
+        exclude   => { schema=>['array*'] },
+        word_mode => {
+            summary => 'Whether to enable word-mode matching',
+            schema=>['bool'],
+            description => <<'_',
+
+See `Complete::Setting` for more detail on word-mode matching.
+
+_
+        },
+        fuzzy     => {
+            summary => 'Set fuzziness for fuzzy matching',
+            schema=>['int*', min=>0],
+            description => <<'_',
+
+See `Complete::Setting` for more detail on fuzzy matching.
+
+_
+        },
+        map_case  => {
             summary => 'Treat _ (underscore) and - (dash) as the same',
             schema  => ['bool'],
         },
@@ -161,21 +180,16 @@ _
     },
 };
 sub complete_array_elem {
-    state $code_editdist = do {
-        if (eval { require Text::Levenshtein::XS; 1 }) {
-            \&Text::Levenshtein::XS::distance;
-        } else {
-            \&__editdist;
-        }
-    };
+    state $code_editdist;
 
     my %args  = @_;
 
-    my $array    = $args{array} or die "Please specify array";
-    my $word     = $args{word} // "";
-    my $ci       = $args{ci} // $Complete::Setting::OPT_CI;
-    my $fuzzy    = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
-    my $map_case = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
+    my $array     = $args{array} or die "Please specify array";
+    my $word      = $args{word} // "";
+    my $ci        = $args{ci} // $Complete::Setting::OPT_CI;
+    my $word_mode = $args{word_mode} // $Complete::Setting::OPT_WORD_MODE;
+    my $fuzzy     = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
+    my $map_case  = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
 
     return [] unless @$array;
 
@@ -183,21 +197,50 @@ sub complete_array_elem {
     my $wordn = $ci ? uc($word) : $word; $wordn =~ s/_/-/g if $map_case;
 
     my @words;
+    my @arrayn;
     for my $el (@$array) {
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+        push @arrayn, $eln; # so we don't have to calculate again
         next unless 0==index($eln, $wordn);
         push @words, $el;
     }
 
+    {
+        last unless $word_mode && !@words;
+        my @split_wordn = $wordn =~ /(\w+)/g;
+        last unless @split_wordn > 1;
+        my $re = '\A';
+        for my $i (0..$#split_wordn) {
+            $re .= '(?:\W+\w+)*\W+' if $i;
+            $re .= quotemeta($split_wordn[$i]).'\w*';
+        }
+        #say "D:re=$re";
+        $re = qr/$re/;
+
+        for my $i (0..$#{$array}) {
+            next unless $arrayn[$i] =~ $re;
+            push @words, $array->[$i];
+        }
+    }
+
     if ($fuzzy && !@words) {
+        $code_editdist //= do {
+            if (eval { require Text::Levenshtein::XS; 1 }) {
+                \&Text::Levenshtein::XS::distance;
+            } else {
+                \&__editdist;
+            }
+        };
+
         my $factor = 1.3;
         my $x = -1;
         my $y = 1;
 
         my %editdists;
       ELEM:
-        for my $el (@$array) {
-            my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+        for my $i (0..$#{$array}) {
+            my $eln = $arrayn[$i];
+
             for my $l (length($wordn)-$y .. length($wordn)+$y) {
                 next if $l <= 0;
                 my $chopped = substr($eln, 0, $l);
@@ -214,7 +257,7 @@ sub complete_array_elem {
                 );
                 #say "D: d(".($ci ? $wordu:$word).",$chopped)=$d (maxd=$maxd)";
                 next unless $d <= $maxd;
-                push @words, $el;
+                push @words, $array->[$i];
                 next ELEM;
             }
         }
@@ -235,11 +278,12 @@ $SPEC{complete_hash_key} = {
     v => 1.1,
     summary => 'Complete from hash keys',
     args => {
-        word     => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
-        hash     => { schema=>['hash*'=>{}], req=>1 },
-        ci       => { schema=>['bool'] },
-        fuzzy    => { schema=>['int*', min=>0] },
-        map_case => { schema=>['bool'] },
+        word      => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        hash      => { schema=>['hash*'=>{}], req=>1 },
+        ci        => { schema=>['bool'] },
+        word_mode => { schema=>['bool'] },
+        fuzzy     => { schema=>['int*', min=>0] },
+        map_case  => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -248,17 +292,18 @@ $SPEC{complete_hash_key} = {
 };
 sub complete_hash_key {
     my %args  = @_;
-    my $hash     = $args{hash} or die "Please specify hash";
-    my $word     = $args{word} // "";
-    my $ci       = $args{ci} // $Complete::Setting::OPT_CI;
-    my $fuzzy    = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
-    my $map_case = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
+    my $hash      = $args{hash} or die "Please specify hash";
+    my $word      = $args{word} // "";
+    my $ci        = $args{ci} // $Complete::Setting::OPT_CI;
+    my $word_mode = $args{word_mode} // $Complete::Setting::OPT_WORD_MODE;
+    my $fuzzy     = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
+    my $map_case  = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
 
     my @array = $ci ?
         (sort {uc($a) cmp uc($b)} keys %$hash) : (sort keys %$hash);
     complete_array_elem(
         word=>$word, array=>\@array,
-        ci=>$ci, fuzzy=>$fuzzy, map_case=>$map_case,
+        ci=>$ci, word_mode=>$word_mode, fuzzy=>$fuzzy, map_case=>$map_case,
     );
 }
 

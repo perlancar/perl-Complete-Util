@@ -8,6 +8,7 @@ use Test::More 0.98;
 
 use Complete::Util qw(complete_array_elem);
 
+local $Complete::Setting::OPT_WORD_MODE = 0;
 local $Complete::Setting::OPT_FUZZY = 0;
 
 test_complete(
@@ -78,6 +79,25 @@ subtest "opt:map_case" => sub {
 
 {
     test_complete(
+        name      => 'opt:word_mode=0',
+        word      => 'a-b',
+        word_mode => 0,
+        array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
+        result    => [qw()],
+        result_ci => [qw()],
+    );
+    test_complete(
+        name      => 'opt:word_mode=1',
+        word      => 'a-b',
+        word_mode => 1,
+        array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
+        result    => [qw(a-f-b a-f-g-b)],
+        result_ci => [qw(a-f-B a-f-b a-f-g-b)],
+    );
+}
+
+{
+    test_complete(
         name      => 'opt:fuzzy',
         word      => 'apl',
         fuzzy     => 1,
@@ -95,13 +115,13 @@ sub test_complete {
     my $name = $args{name} // $args{word};
     my $res = complete_array_elem(
         word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
-        fuzzy=>$args{fuzzy}, ci=>0, map_case=>$args{map_case});
+        word_mode=>$args{word_mode}, fuzzy=>$args{fuzzy}, ci=>0, map_case=>$args{map_case});
     is_deeply($res, $args{result}, "$name (result)")
         or diag explain($res);
     if ($args{result_ci}) {
         my $res_ci = complete_array_elem(
             word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
-            fuzzy=>$args{fuzzy}, ci=>1, map_case=>$args{map_case});
+            word_mode=>$args{word_mode}, fuzzy=>$args{fuzzy}, ci=>1, map_case=>$args{map_case});
         is_deeply($res_ci, $args{result_ci}, "$name (result_ci)")
             or diag explain($res_ci);
     }

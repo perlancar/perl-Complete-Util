@@ -70,12 +70,12 @@ sub test_complete {
     my $name = $args{name} // $args{word};
     my $res = [sort @{complete_hash_key(
         word=>$args{word}, hash=>$args{hash},
-        ci=>0, fuzzy=>$args{fuzzy}, map_case=>$args{map_case})}];
+        ci=>0, word_mode=>$args{word_mode}, fuzzy=>$args{fuzzy}, map_case=>$args{map_case})}];
     is_deeply($res, $args{result}, "$name (result)") or explain($res);
     if ($args{result_ci}) {
         my $res_ci = [sort @{complete_hash_key(
             word=>$args{word}, hash=>$args{hash},
-            ci=>1, fuzzy=>$args{fuzzy}, map_case=>$args{map_case})}];
+            ci=>1, word_mode=>$args{word_mode}, fuzzy=>$args{fuzzy}, map_case=>$args{map_case})}];
         is_deeply($res_ci, $args{result_ci}, "$name (result_ci)")
             or explain($res_ci);
     }
