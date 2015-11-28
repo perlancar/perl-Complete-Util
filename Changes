@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.39    2015-11-28 (PERLANCAR)
+
+        - Add word-mode matching, like in Emacs.
+
+
 0.38    2015-09-18 (PERLANCAR)
 
 	- Use Text::Levenshtein::XS if available, for faster fuzzy
