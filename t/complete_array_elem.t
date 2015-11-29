@@ -94,6 +94,14 @@ subtest "opt:map_case" => sub {
         result    => [qw(a-f-b a-f-g-b)],
         result_ci => [qw(a-f-B a-f-b a-f-g-b)],
     );
+    test_complete(
+        name      => 'opt:word_mode=1 searching non-first word',
+        word      => '-b',
+        word_mode => 1,
+        array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
+        result    => [qw(a-f-b a-f-g-b)],
+        result_ci => [qw(a-f-B a-f-b a-f-g-b)],
+    );
 }
 
 {

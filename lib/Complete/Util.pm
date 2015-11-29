@@ -208,6 +208,7 @@ sub complete_array_elem {
     {
         last unless $word_mode && !@words;
         my @split_wordn = $wordn =~ /(\w+)/g;
+        unshift @split_wordn, '' if $wordn =~ /\A\W/;
         last unless @split_wordn > 1;
         my $re = '\A';
         for my $i (0..$#split_wordn) {

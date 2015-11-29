@@ -9,6 +9,7 @@ use Test::More;
 
 use Complete::Util qw(complete_hash_key);
 
+local $Complete::Setting::OPT_WORD_MODE = 0;
 local $Complete::Setting::OPT_FUZZY = 0;
 
 test_complete(
@@ -23,6 +24,8 @@ test_complete(
     result    => [qw()],
     result_ci => [qw()],
 );
+
+# TODO: opt:word_mode (but at least this has been tested in complete_array_elem.t)
 
 subtest "opt:fuzzy" => sub {
     test_complete(
