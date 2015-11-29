@@ -7,10 +7,9 @@ use 5.010001;
 use strict;
 use warnings;
 
-use Complete::Setting;
+use Complete::Common qw(:all);
 
-require Exporter;
-our @ISA = qw(Exporter);
+use Exporter qw(import);
 our @EXPORT_OK = qw(
                        hashify_answer
                        arrayify_answer
@@ -145,34 +144,9 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        word      => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        %arg_word,
         array     => { schema=>['array*'=>{of=>'str*'}], req=>1 },
-        ci        => {
-            schema=>['bool'],
-        },
         exclude   => { schema=>['array*'] },
-        word_mode => {
-            summary => 'Whether to enable word-mode matching',
-            schema=>['bool'],
-            description => <<'_',
-
-See `Complete::Setting` for more detail on word-mode matching.
-
-_
-        },
-        fuzzy     => {
-            summary => 'Set fuzziness for fuzzy matching',
-            schema=>['int*', min=>0],
-            description => <<'_',
-
-See `Complete::Setting` for more detail on fuzzy matching.
-
-_
-        },
-        map_case  => {
-            summary => 'Treat _ (underscore) and - (dash) as the same',
-            schema  => ['bool'],
-        },
     },
     result_naked => 1,
     result => {
@@ -186,10 +160,11 @@ sub complete_array_elem {
 
     my $array     = $args{array} or die "Please specify array";
     my $word      = $args{word} // "";
-    my $ci        = $args{ci} // $Complete::Setting::OPT_CI;
-    my $word_mode = $args{word_mode} // $Complete::Setting::OPT_WORD_MODE;
-    my $fuzzy     = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
-    my $map_case  = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
+
+    my $ci        = $Complete::Common::OPT_CI;
+    my $map_case  = $Complete::Common::OPT_MAP_CASE;
+    my $word_mode = $Complete::Common::OPT_WORD_MODE;
+    my $fuzzy     = $Complete::Common::OPT_FUZZY;
 
     return [] unless @$array;
 
@@ -279,12 +254,8 @@ $SPEC{complete_hash_key} = {
     v => 1.1,
     summary => 'Complete from hash keys',
     args => {
-        word      => { schema=>[str=>{default=>''}], pos=>0, req=>1 },
+        %arg_word,
         hash      => { schema=>['hash*'=>{}], req=>1 },
-        ci        => { schema=>['bool'] },
-        word_mode => { schema=>['bool'] },
-        fuzzy     => { schema=>['int*', min=>0] },
-        map_case  => { schema=>['bool'] },
     },
     result_naked => 1,
     result => {
@@ -295,16 +266,9 @@ sub complete_hash_key {
     my %args  = @_;
     my $hash      = $args{hash} or die "Please specify hash";
     my $word      = $args{word} // "";
-    my $ci        = $args{ci} // $Complete::Setting::OPT_CI;
-    my $word_mode = $args{word_mode} // $Complete::Setting::OPT_WORD_MODE;
-    my $fuzzy     = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
-    my $map_case  = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
 
-    my @array = $ci ?
-        (sort {uc($a) cmp uc($b)} keys %$hash) : (sort keys %$hash);
     complete_array_elem(
-        word=>$word, array=>\@array,
-        ci=>$ci, word_mode=>$word_mode, fuzzy=>$fuzzy, map_case=>$map_case,
+        word=>$word, array=>[sort keys %$hash],
     );
 }
 
