@@ -1,5 +1,14 @@
 Revision history for Complete-Util
 
+0.41    2015-11-29 (PERLANCAR)
+
+	- Adjust to Complete::Common 0.21.
+
+	- [Removed] For more consistent user experience, remove options
+	  ci/word_mode/fuzzy/map_case, users are now encouraged to set behavior
+	  globally via Complete::Common.
+
+
 0.40    2015-11-29 (PERLANCAR)
 
 	- Tweak word-mode matching: allow searching non-first word using
