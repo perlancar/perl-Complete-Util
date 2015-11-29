@@ -1,5 +1,11 @@
 Revision history for Complete-Util
 
+0.40    2015-11-29 (PERLANCAR)
+
+	- Tweak word-mode matching: allow searching non-first word using
+	  '-foo' like in Emacs.
+
+
 0.39    2015-11-28 (PERLANCAR)
 
         - Add word-mode matching, like in Emacs.
