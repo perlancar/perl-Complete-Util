@@ -1,5 +1,13 @@
 Revision history for Complete-Util
 
+0.42    2015-12-17 (PERLANCAR)
+
+	- [experimental][ux] In word mode completion, try matching word
+	  like 'ca-c' with strings like 'CamelCaseWord' by internally
+	  converting the string into 'Camel-Case-Word' first, this is
+	  convenient when matching e.g. perl module names.
+
+
 0.41    2015-11-29 (PERLANCAR)
 
 	- Adjust to Complete::Common 0.21.
