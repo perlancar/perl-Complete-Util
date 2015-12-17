@@ -190,11 +190,27 @@ sub complete_array_elem {
             $re .= '(?:\W+\w+)*\W+' if $i;
             $re .= quotemeta($split_wordn[$i]).'\w*';
         }
-        #say "D:re=$re";
+        #say "D:entering word mode, re=$re";
         $re = qr/$re/;
 
         for my $i (0..$#{$array}) {
-            next unless $arrayn[$i] =~ $re;
+            my $match;
+            {
+                if ($arrayn[$i] =~ $re) {
+                    $match++;
+                    last;
+                }
+                # try splitting CamelCase into Camel-Case
+                my $tmp = $array->[$i];
+                if ($tmp =~ s/([a-z0-9_])([A-Z])/$1-$2/g) {
+                    $tmp = uc($tmp) if $ci; $tmp =~ s/_/-/g if $map_case; # normalize again
+                    if ($tmp =~ $re) {
+                        $match++;
+                        last;
+                    }
+                }
+            }
+            next unless $match;
             push @words, $array->[$i];
         }
     }
