@@ -107,6 +107,8 @@ sub __min(@) {
     $m;
 }
 
+our $code_editdist;
+
 # straight copy of Wikipedia's "Levenshtein Distance"
 sub __editdist {
     my @a = split //, shift;
@@ -182,8 +184,6 @@ _
     },
 };
 sub complete_array_elem {
-    state $code_editdist;
-
     my %args  = @_;
 
     my $array     = $args{array} or die "Please specify array";
@@ -295,7 +295,12 @@ sub complete_array_elem {
     # fuzzy matching
     if ($fuzzy && !@words) {
         $code_editdist //= do {
-            if (eval { require Text::Levenshtein::XS; 1 }) {
+            if (($ENV{COMPLETE_UTIL_LEVENSHTEIN} // '') eq 'xs') {
+                require Text::Levenshtein::XS;
+                \&Text::Levenshtein::XS::distance;
+            } elsif (($ENV{COMPLETE_UTIL_LEVENSHTEIN} // '') eq 'pp') {
+                \&__editdist;
+            } elsif (eval { require Text::Levenshtein::XS; 1 }) {
                 \&Text::Levenshtein::XS::distance;
             } else {
                 \&__editdist;
@@ -485,6 +490,16 @@ sub combine_answers {
 # ABSTRACT:
 
 =head1 DESCRIPTION
+
+
+=head1 ENVIRONMENT
+
+=head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs')
+
+Can be used to force which levenshtein implementation to use. The default is to
+use XS version from L<Text::Levenshtein::XS> if that module is installed,
+otherwise fallback to the included PP implementation (which is about 1-2 orders
+of magnitude slower).
 
 
 =head1 SEE ALSO
