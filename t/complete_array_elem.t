@@ -29,13 +29,25 @@ test_complete(
     result    => [qw()],
 );
 
-test_complete(
-    name      => 'opt:exclude',
-    word      => 'a',
-    array     => [qw(an apple a day keeps the doctor away)],
-    exclude   => [qw(a apple foo)],
-    result    => [qw(an away)],
-);
+subtest "arg:exclude" => sub {
+    test_complete(
+        name      => 'arg:exclude',
+        word      => 'a',
+        array     => [qw(an apple a day keeps the doctor away)],
+        exclude   => [qw(a apple foo)],
+        result    => [qw(an away)],
+    );
+    {
+        local $Complete::Common::OPT_MAP_CASE = 1;
+        test_complete(
+            name      => 'arg:exclude + opt:map_case',
+            word      => 'a-',
+            array     => [qw(a_b a_bc)],
+            exclude   => [qw(a-b)],
+            result    => [qw(a_bc)],
+        );
+    }
+};
 
 subtest 'opt:ci' => sub {
     local $Complete::Common::OPT_CI = 1;
@@ -46,11 +58,10 @@ subtest 'opt:ci' => sub {
         result    => [qw(An)],
     );
     test_complete(
-        name      => 'opt:exclude (ci)',
+        name      => 'opt:ci + arg:exclude',
         word      => 'a',
         array     => [qw(an apple a day keeps the doctor away)],
         exclude   => [qw(A Apple foo)],
-        result    => [qw(a an apple away)],
         result    => [qw(an away)],
     );
 };
@@ -94,7 +105,6 @@ subtest "opt:word_mode" => sub {
         word_mode => 0,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw()],
-        result_ci => [qw()],
     );
 
     $Complete::Common::OPT_WORD_MODE = 1;
@@ -104,7 +114,6 @@ subtest "opt:word_mode" => sub {
         word_mode => 1,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw(a-f-b a-f-g-b)],
-        result_ci => [qw(a-f-B a-f-b a-f-g-b)],
     );
     test_complete(
         name      => 'opt:word_mode=1 searching non-first word',
@@ -112,7 +121,6 @@ subtest "opt:word_mode" => sub {
         word_mode => 1,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw(a-f-b a-f-g-b)],
-        result_ci => [qw(a-f-B a-f-b a-f-g-b)],
     );
 };
 
@@ -123,11 +131,36 @@ subtest "opt:fuzzy" => sub {
     test_complete(
         name      => 'opt:fuzzy=1',
         word      => 'apl',
-        fuzzy     => 1,
         array     => [qw(apple orange Apricot)],
         result    => [qw(apple)],
-        result_ci => [qw(apple Apricot)],
     );
+};
+
+subtest "arg:replace_map" => sub {
+    test_complete(
+        name   => 'arg:replace_map (1)',
+        word   => "um",
+        array  => ["mount", "unmount"],
+        replace_map => {unmount => [qw/umount/]},
+        result => ["unmount"],
+    );
+    test_complete(
+        name   => 'arg:replace_map (2)',
+        word   => "umount",
+        array  => ["mount", "unmount"],
+        replace_map => {unmount => [qw/umount/]},
+        result => ["unmount"],
+    );
+    {
+        local $Complete::Common::OPT_CI = 1;
+        test_complete(
+            name   => 'arg:replace_map + opt:ci=1',
+            word   => "uMO",
+            array  => ["mount", "unmount"],
+            replace_map => {Unmount => [qw/Umount/]},
+            result => ["Unmount"],
+        );
+    }
 };
 
 DONE_TESTING:
@@ -139,6 +172,7 @@ sub test_complete {
     my $name = $args{name} // $args{word};
     my $res = complete_array_elem(
         word=>$args{word}, array=>$args{array}, exclude=>$args{exclude},
+        replace_map=>$args{replace_map},
     );
     is_deeply($res, $args{result}, "$name (result)")
         or diag explain($res);

@@ -145,8 +145,29 @@ Will sort the resulting completion list, so you don't have to presort the array.
 _
     args => {
         %arg_word,
-        array     => { schema=>['array*'=>{of=>'str*'}], req=>1 },
-        exclude   => { schema=>['array*'] },
+        array       => {
+            schema => ['array*'=>{of=>'str*'}],
+            req => 1,
+        },
+        exclude     => {
+            schema => ['array*'],
+        },
+        replace_map => {
+            schema => ['hash*', each_value=>['array*', of=>'str*']],
+            description => <<'_',
+
+You can supply correction entries in this option. An example is when array if
+`['mount','unmount']` and `umount` is a popular "typo" for `unmount`. When
+someone already types `um` it cannot be completed into anything (even the
+current fuzzy mode will return *both* so it cannot complete immediately).
+
+One solution is to add replace_map `{'unmount'=>['umount']}`. This way, `umount`
+will be regarded the same as `unmount` and when user types `um` it can be
+completed unambiguously into `unmount`.
+
+_
+            tags => ['experimental'],
+        },
     },
     result_naked => 1,
     result => {
@@ -171,13 +192,51 @@ sub complete_array_elem {
     # normalize
     my $wordn = $ci ? uc($word) : $word; $wordn =~ s/_/-/g if $map_case;
 
-    my @words;
-    my @arrayn;
+    my $excluden;
+    if ($args{exclude}) {
+        $excluden = {};
+        for my $el (@{$args{exclude}}) {
+            my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+            $excluden->{$eln} //= 1;
+        }
+    }
+
+    my $rmapn;
+    my $rev_rmapn; # to replace back to the original words back in the result
+    if (my $rmap = $args{replace_map}) {
+        $rmapn = {};
+        $rev_rmapn = {};
+        for my $k (keys %$rmap) {
+            my $kn = $ci ? uc($k) : $k; $kn =~ s/_/-/g if $map_case;
+            my @vn;
+            for my $v (@{ $rmap->{$k} }) {
+                my $vn = $ci ? uc($v) : $v; $vn =~ s/_/-/g if $map_case;
+                push @vn, $vn;
+                $rev_rmapn->{$vn} //= $k;
+            }
+            $rmapn->{$kn} = \@vn;
+        }
+    }
+
+    my @words; # the answer
+    my @arrayn; # case- & map-case-normalized form of $array (+rmap entries)
+
+    # normal (non-fuzzy, non-word-mode) matching. we also fill @arrayn here
+    # (which will be used again in word-mode & fuzzy matching) so we don't have
+    # to calculate again.
     for my $el (@$array) {
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
-        push @arrayn, $eln; # so we don't have to calculate again
-        next unless 0==index($eln, $wordn);
-        push @words, $el;
+        next if $excluden && $excluden->{$eln};
+        push @arrayn, $eln;
+        push @words, $el if 0==index($eln, $wordn);
+        if ($rmapn && $rmapn->{$eln}) {
+            for my $vn (@{ $rmapn->{$eln} }) {
+                push @arrayn, $vn;
+                # we add the normalized form, because we'll just revert it back
+                # to the original word in the final result
+                push @words, $vn if 0==index($vn, $wordn);
+            }
+        }
     }
 
     {
@@ -255,12 +314,18 @@ sub complete_array_elem {
         }
     }
 
-    if ($args{exclude}) {
-        my $exclude = $ci ? [map {uc} @{ $args{exclude} }] : $args{exclude};
-        @words = grep {
-            my $w = $_;
-            !(grep {($ci ? uc($w) : $w) eq $_} @$exclude);
-        } @words;
+    # replace back the words from replace_map
+    if ($rmapn && @words) {
+        my @wordsn;
+        for my $el (@words) {
+            my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
+            push @wordsn, $eln;
+        }
+        for my $i (0..$#words) {
+            if (my $w = $rev_rmapn->{$wordsn[$i]}) {
+                $words[$i] = $w;
+            }
+        }
     }
 
     return $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
