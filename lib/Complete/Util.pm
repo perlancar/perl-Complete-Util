@@ -510,3 +510,5 @@ If you want to do bash tab completion with Perl, take a look at
 L<Complete::Bash> or L<Getopt::Long::Complete> or L<Perinci::CmdLine>.
 
 Other C<Complete::*> modules.
+
+L<Bencher::Scenarios::CompleteUtil>
