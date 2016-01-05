@@ -1,5 +1,14 @@
 Revision history for Complete-Util
 
+0.44    2016-01-05 (PERLANCAR)
+
+        - Update to Complete::Common 0.22 (OPT_CHAR_MODE).
+
+        - complete_array_elem(): Implement char-mode matching (done when normal
+          prefix matching and word-mode matching fails to return any results,
+          before fuzzy matching).
+
+
 0.43    2016-01-05 (PERLANCAR)
 
         - complete_array_elem(): Add replace_map option.
