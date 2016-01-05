@@ -284,7 +284,7 @@ sub complete_array_elem {
     }
 
     # char-mode matching
-    if ($char_mode && !@words && length($wordn)) {
+    if ($char_mode && !@words && length($wordn) && length($wordn) <= 7) {
         my $re = join(".*", map {quotemeta} split(//, $wordn));
         $re = qr/$re/;
         for my $i (0..$#arrayn) {
