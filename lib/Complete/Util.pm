@@ -140,6 +140,13 @@ $SPEC{complete_array_elem} = {
     summary => 'Complete from array',
     description => <<'_',
 
+Try to find completion from an array of strings. Will attempt several methods,
+from the cheapest and most discriminating to the most expensive and least
+discriminating: normal string prefix matching, word-mode matching (see
+`Complete::Common::OPT_WORD_MODE` for more details), char-mode matching (see
+`Complete::Common::OPT_CHAR_MODE` for more details), and fuzzy matching (see
+`Complete::Common::OPT_FUZZY` for more details).
+
 Will sort the resulting completion list, so you don't have to presort the array.
 
 _
@@ -182,10 +189,11 @@ sub complete_array_elem {
     my $array     = $args{array} or die "Please specify array";
     my $word      = $args{word} // "";
 
-    my $ci        = $Complete::Common::OPT_CI;
-    my $map_case  = $Complete::Common::OPT_MAP_CASE;
-    my $word_mode = $Complete::Common::OPT_WORD_MODE;
-    my $fuzzy     = $Complete::Common::OPT_FUZZY;
+    my $ci          = $Complete::Common::OPT_CI;
+    my $map_case    = $Complete::Common::OPT_MAP_CASE;
+    my $word_mode   = $Complete::Common::OPT_WORD_MODE;
+    my $char_mode   = $Complete::Common::OPT_CHAR_MODE // 1;
+    my $fuzzy       = $Complete::Common::OPT_FUZZY;
 
     return [] unless @$array;
 
@@ -221,8 +229,8 @@ sub complete_array_elem {
     my @words; # the answer
     my @arrayn; # case- & map-case-normalized form of $array (+rmap entries)
 
-    # normal (non-fuzzy, non-word-mode) matching. we also fill @arrayn here
-    # (which will be used again in word-mode & fuzzy matching) so we don't have
+    # normal string prefix matching. we also fill @arrayn here (which will be
+    # used again in word-mode, fuzzy, and char-mode matching) so we don't have
     # to calculate again.
     for my $el (@$array) {
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
@@ -239,6 +247,7 @@ sub complete_array_elem {
         }
     }
 
+    # word-mode matching
     {
         last unless $word_mode && !@words;
         my @split_wordn = $wordn =~ /(\w+)/g;
@@ -274,6 +283,16 @@ sub complete_array_elem {
         }
     }
 
+    # char-mode matching
+    if ($char_mode && !@words && length($wordn)) {
+        my $re = join(".*", map {quotemeta} split(//, $wordn));
+        $re = qr/$re/;
+        for my $i (0..$#arrayn) {
+            push @words, $array->[$i] if $arrayn[$i] =~ $re;
+        }
+    }
+
+    # fuzzy matching
     if ($fuzzy && !@words) {
         $code_editdist //= do {
             if (eval { require Text::Levenshtein::XS; 1 }) {

@@ -9,6 +9,7 @@ use Test::More 0.98;
 use Complete::Util qw(complete_array_elem);
 
 local $Complete::Common::OPT_WORD_MODE = 0;
+local $Complete::Common::OPT_CHAR_MODE = 0;
 local $Complete::Common::OPT_MAP_CASE = 0;
 local $Complete::Common::OPT_FUZZY = 0;
 local $Complete::Common::OPT_CI = 0;
@@ -102,7 +103,6 @@ subtest "opt:word_mode" => sub {
     test_complete(
         name      => 'opt:word_mode=0',
         word      => 'a-b',
-        word_mode => 0,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw()],
     );
@@ -111,16 +111,34 @@ subtest "opt:word_mode" => sub {
     test_complete(
         name      => 'opt:word_mode=1',
         word      => 'a-b',
-        word_mode => 1,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw(a-f-b a-f-g-b)],
     );
     test_complete(
         name      => 'opt:word_mode=1 searching non-first word',
         word      => '-b',
-        word_mode => 1,
         array     => [qw(a-f-B a-f-b a-f-ab a-f-g-b)],
         result    => [qw(a-f-b a-f-g-b)],
+    );
+};
+
+subtest "opt:char_mode" => sub {
+    local $Complete::Common::OPT_CHAR_MODE;
+
+    $Complete::Common::OPT_CHAR_MODE = 0;
+    test_complete(
+        name      => 'opt:char_mode=0',
+        word      => 'ab',
+        array     => [qw(axb xaxb ba)],
+        result    => [qw()],
+    );
+
+    $Complete::Common::OPT_CHAR_MODE = 1;
+    test_complete(
+        name      => 'opt:char_mode=0',
+        word      => 'ab',
+        array     => [qw(axb xaxb ba)],
+        result    => [qw(axb xaxb)],
     );
 };
 
