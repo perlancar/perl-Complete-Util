@@ -1,5 +1,13 @@
 Revision history for Complete-Util
 
+0.45    2016-01-05 (PERLANCAR)
+
+	- [doc] Mention Bencher::Scenarios::CompleteUtil.
+
+	- Observe COMPLETE_UTIL_LEVENSHTEIN to allow forcing which
+	  levenshtein edit distance implementation to use (pp/xs).
+
+
 0.44    2016-01-05 (PERLANCAR)
 
         - Update to Complete::Common 0.22 (OPT_CHAR_MODE).

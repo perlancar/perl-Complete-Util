@@ -192,7 +192,7 @@ sub complete_array_elem {
     my $ci          = $Complete::Common::OPT_CI;
     my $map_case    = $Complete::Common::OPT_MAP_CASE;
     my $word_mode   = $Complete::Common::OPT_WORD_MODE;
-    my $char_mode   = $Complete::Common::OPT_CHAR_MODE // 1;
+    my $char_mode   = $Complete::Common::OPT_CHAR_MODE;
     my $fuzzy       = $Complete::Common::OPT_FUZZY;
 
     return [] unless @$array;
