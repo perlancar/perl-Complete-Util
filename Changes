@@ -1,5 +1,13 @@
 Revision history for Complete-Util
 
+0.43    2016-01-05 (PERLANCAR)
+
+        - complete_array_elem(): Add replace_map option.
+
+        - [Bugfix] complete_array_elem(): the exclude option now honors
+          OPT_MAP_CASE.
+
+
 0.42    2015-12-17 (PERLANCAR)
 
 	- [experimental][ux] In word mode completion, try matching word
