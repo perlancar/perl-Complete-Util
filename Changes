@@ -1,5 +1,15 @@
 Revision history for Complete-Util
 
+0.46    2016-04-05 (PERLANCAR)
+
+        - [Bugfix] complete_array_elem(): When there is replace_map, @arrayn was
+	  longer than the original array because we appended to it replace_map
+	  entries. We now use a copy of original array (@array) to make @array
+	  and @arrayn of the same length again.
+
+	- Add logging statement (enabled only when COMPLETE_UTIL_TRACE=1).
+
+
 0.45    2016-01-05 (PERLANCAR)
 
 	- [doc] Mention Bencher::Scenarios::CompleteUtil.
