@@ -6,6 +6,7 @@ package Complete::Util;
 use 5.010001;
 use strict;
 use warnings;
+use Log::Any::IfLOG '$log';
 
 use Complete::Common qw(:all);
 
@@ -19,6 +20,8 @@ our @EXPORT_OK = qw(
                );
 
 our %SPEC;
+
+our $COMPLETE_UTIL_TRACE = $ENV{COMPLETE_UTIL_TRACE} // 0;
 
 $SPEC{':package'} = {
     v => 1.1,
@@ -186,7 +189,7 @@ _
 sub complete_array_elem {
     my %args  = @_;
 
-    my $array     = $args{array} or die "Please specify array";
+    my $array0    = $args{array} or die "Please specify array";
     my $word      = $args{word} // "";
 
     my $ci          = $Complete::Common::OPT_CI;
@@ -195,7 +198,7 @@ sub complete_array_elem {
     my $char_mode   = $Complete::Common::OPT_CHAR_MODE;
     my $fuzzy       = $Complete::Common::OPT_FUZZY;
 
-    return [] unless @$array;
+    return [] unless @$array0;
 
     # normalize
     my $wordn = $ci ? uc($word) : $word; $wordn =~ s/_/-/g if $map_case;
@@ -227,25 +230,30 @@ sub complete_array_elem {
     }
 
     my @words; # the answer
-    my @arrayn; # case- & map-case-normalized form of $array (+rmap entries)
+    my @array ;  # original array + rmap entries
+    my @arrayn;  # case- & map-case-normalized form of $array + rmap entries
 
-    # normal string prefix matching. we also fill @arrayn here (which will be
-    # used again in word-mode, fuzzy, and char-mode matching) so we don't have
-    # to calculate again.
-    for my $el (@$array) {
+    # normal string prefix matching. we also fill @array & @arrayn here (which
+    # will be used again in word-mode, fuzzy, and char-mode matching) so we
+    # don't have to calculate again.
+    $log->tracef("[computil] Trying normal string-prefix matching ...") if $COMPLETE_UTIL_TRACE;
+    for my $el (@$array0) {
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
         next if $excluden && $excluden->{$eln};
+        push @array , $el;
         push @arrayn, $eln;
-        push @words, $el if 0==index($eln, $wordn);
+        push @words , $el if 0==index($eln, $wordn);
         if ($rmapn && $rmapn->{$eln}) {
             for my $vn (@{ $rmapn->{$eln} }) {
+                push @array , $el;
                 push @arrayn, $vn;
                 # we add the normalized form, because we'll just revert it back
                 # to the original word in the final result
-                push @words, $vn if 0==index($vn, $wordn);
+                push @words , $vn if 0==index($vn, $wordn);
             }
         }
     }
+    $log->tracef("[computil] Result from normal string-prefix matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
 
     # word-mode matching
     {
@@ -258,10 +266,10 @@ sub complete_array_elem {
             $re .= '(?:\W+\w+)*\W+' if $i;
             $re .= quotemeta($split_wordn[$i]).'\w*';
         }
-        #say "D:entering word mode, re=$re";
         $re = qr/$re/;
+        $log->tracef("[computil] Trying word-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
 
-        for my $i (0..$#{$array}) {
+        for my $i (0..$#array) {
             my $match;
             {
                 if ($arrayn[$i] =~ $re) {
@@ -269,7 +277,7 @@ sub complete_array_elem {
                     last;
                 }
                 # try splitting CamelCase into Camel-Case
-                my $tmp = $array->[$i];
+                my $tmp = $array[$i];
                 if ($tmp =~ s/([a-z0-9_])([A-Z])/$1-$2/g) {
                     $tmp = uc($tmp) if $ci; $tmp =~ s/_/-/g if $map_case; # normalize again
                     if ($tmp =~ $re) {
@@ -279,21 +287,25 @@ sub complete_array_elem {
                 }
             }
             next unless $match;
-            push @words, $array->[$i];
+            push @words, $array[$i];
         }
+        $log->tracef("[computil] Result from word-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # char-mode matching
     if ($char_mode && !@words && length($wordn) && length($wordn) <= 7) {
         my $re = join(".*", map {quotemeta} split(//, $wordn));
         $re = qr/$re/;
-        for my $i (0..$#arrayn) {
-            push @words, $array->[$i] if $arrayn[$i] =~ $re;
+        $log->tracef("[computil] Trying char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
+        for my $i (0..$#array) {
+            push @words, $array[$i] if $arrayn[$i] =~ $re;
         }
+        $log->tracef("[computil] Result from char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # fuzzy matching
     if ($fuzzy && !@words) {
+        $log->tracef("[computil] Trying fuzzy matching ...") if $COMPLETE_UTIL_TRACE;
         $code_editdist //= do {
             if (($ENV{COMPLETE_UTIL_LEVENSHTEIN} // '') eq 'xs') {
                 require Text::Levenshtein::XS;
@@ -313,7 +325,7 @@ sub complete_array_elem {
 
         my %editdists;
       ELEM:
-        for my $i (0..$#{$array}) {
+        for my $i (0..$#array) {
             my $eln = $arrayn[$i];
 
             for my $l (length($wordn)-$y .. length($wordn)+$y) {
@@ -332,10 +344,11 @@ sub complete_array_elem {
                 );
                 #say "D: d(".($ci ? $wordu:$word).",$chopped)=$d (maxd=$maxd)";
                 next unless $d <= $maxd;
-                push @words, $array->[$i];
+                push @words, $array[$i];
                 next ELEM;
             }
         }
+        $log->tracef("[computil] Result from fuzzy matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # replace back the words from replace_map
@@ -493,6 +506,10 @@ sub combine_answers {
 
 
 =head1 ENVIRONMENT
+
+=head2 COMPLETE_UTIL_TRACE => bool
+
+If set to true, will display more log statements for debugging.
 
 =head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs')
 

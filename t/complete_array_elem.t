@@ -158,17 +158,27 @@ subtest "arg:replace_map" => sub {
     test_complete(
         name   => 'arg:replace_map (1)',
         word   => "um",
-        array  => ["mount", "unmount"],
+        array  => ["mount", "unmount", "sync-to", "sync-from"],
         replace_map => {unmount => [qw/umount/]},
         result => ["unmount"],
     );
     test_complete(
         name   => 'arg:replace_map (2)',
         word   => "umount",
-        array  => ["mount", "unmount"],
+        array  => ["mount", "unmount", "sync-to", "sync-from"],
         replace_map => {unmount => [qw/umount/]},
         result => ["unmount"],
     );
+    {
+        local $Complete::Common::OPT_CHAR_MODE = 1;
+        test_complete(
+            name   => 'arg:replace_map + opt:char_mode=1',
+            word   => "to",
+            array  => ["mount", "unmount", "sync-to", "sync-from"],
+            replace_map => {unmount => [qw/umount/]},
+            result => ["sync-to"],
+        );
+    }
     {
         local $Complete::Common::OPT_CI = 1;
         test_complete(
