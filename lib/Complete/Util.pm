@@ -17,6 +17,7 @@ our @EXPORT_OK = qw(
                        combine_answers
                        complete_array_elem
                        complete_hash_key
+                       complete_comma_sep
                );
 
 our %SPEC;
@@ -140,6 +141,33 @@ sub __editdist {
     $d[@a][@b];
 }
 
+my %complete_array_elem_args = (
+    %arg_word,
+    array       => {
+        schema => ['array*'=>{of=>'str*'}],
+        req => 1,
+    },
+    exclude     => {
+        schema => ['array*'],
+    },
+    replace_map => {
+        schema => ['hash*', each_value=>['array*', of=>'str*']],
+        description => <<'_',
+
+You can supply correction entries in this option. An example is when array if
+`['mount','unmount']` and `umount` is a popular "typo" for `unmount`. When
+someone already types `um` it cannot be completed into anything (even the
+current fuzzy mode will return *both* so it cannot complete immediately).
+
+One solution is to add replace_map `{'unmount'=>['umount']}`. This way, `umount`
+will be regarded the same as `unmount` and when user types `um` it can be
+completed unambiguously into `unmount`.
+
+_
+        tags => ['experimental'],
+    },
+);
+
 $SPEC{complete_array_elem} = {
     v => 1.1,
     summary => 'Complete from array',
@@ -156,30 +184,7 @@ Will sort the resulting completion list, so you don't have to presort the array.
 
 _
     args => {
-        %arg_word,
-        array       => {
-            schema => ['array*'=>{of=>'str*'}],
-            req => 1,
-        },
-        exclude     => {
-            schema => ['array*'],
-        },
-        replace_map => {
-            schema => ['hash*', each_value=>['array*', of=>'str*']],
-            description => <<'_',
-
-You can supply correction entries in this option. An example is when array if
-`['mount','unmount']` and `umount` is a popular "typo" for `unmount`. When
-someone already types `um` it cannot be completed into anything (even the
-current fuzzy mode will return *both* so it cannot complete immediately).
-
-One solution is to add replace_map `{'unmount'=>['umount']}`. This way, `umount`
-will be regarded the same as `unmount` and when user types `um` it can be
-completed unambiguously into `unmount`.
-
-_
-            tags => ['experimental'],
-        },
+        %complete_array_elem_args,
     },
     result_naked => 1,
     result => {
@@ -388,6 +393,73 @@ sub complete_hash_key {
     complete_array_elem(
         word=>$word, array=>[sort keys %$hash],
     );
+}
+
+my %complete_comma_sep_args = (
+    %complete_array_elem_args,
+    sep => {
+        schema  => 'str*',
+        default => ',',
+    },
+    uniq => {
+        summary => 'Whether list contains unique elements',
+        schema => ['str*', is=>1],
+    },
+);
+$complete_comma_sep_args{elems} = delete $complete_comma_sep_args{array};
+
+$SPEC{complete_comma_sep} = {
+    v => 1.1,
+    summary => 'Complete a comma-separated list string',
+    args => {
+        %complete_comma_sep_args,
+    },
+    result_naked => 1,
+    result => {
+        schema => 'array',
+    },
+};
+sub complete_comma_sep {
+    my %args  = @_;
+    my $word      = delete $args{word} // "";
+    my $sep       = delete $args{sep} // ',';
+    my $elems     = delete $args{elems} or die "Please specify elems";
+    my $uniq      = delete $args{uniq};
+
+    my $ci = $Complete::Common::OPT_CI;
+
+    my @mentioned_elems = split /\Q$sep\E/, $word, -1;
+    my $cae_word = @mentioned_elems ? pop(@mentioned_elems) : '';
+
+    my @unmentioned_elems;
+    {
+        last unless $uniq;
+        my %mem;
+        for (@mentioned_elems) {
+            if ($ci) { $mem{lc $_}++ } else { $mem{$_}++ }
+        }
+        for (@$elems) {
+            push @unmentioned_elems, $_ unless ($ci ? $mem{lc $_} : $mem{$_});
+        }
+    }
+
+    my $cae_res = complete_array_elem(
+        %args,
+        word  => $cae_word,
+        array => ($uniq ? \@unmentioned_elems : $elems),
+    );
+
+    my $prefix = join($sep, @mentioned_elems);
+    $prefix .= $sep if @mentioned_elems;
+    $cae_res = [map { "$prefix$_" } @$cae_res];
+
+    # add trailing comma for convenience, where appropriate
+    {
+        last unless @$cae_res == 1;
+        last if $uniq && @unmentioned_elems <= 1;
+        $cae_res->[0] .= $sep;
+    }
+    $cae_res;
 }
 
 $SPEC{combine_answers} = {
