@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.47    2016-08-24 (PERLANCAR)
+
+	- Add complete_comma_sep().
+
+
 0.46    2016-04-05 (PERLANCAR)
 
         - [Bugfix] complete_array_elem(): When there is replace_map, @arrayn was
