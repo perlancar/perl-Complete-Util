@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.48    2016-08-24 (PERLANCAR)
+
+	- No functional changes.
+
+	- Fix Rinci metadata.
+
+
 0.47    2016-08-24 (PERLANCAR)
 
 	- Add complete_comma_sep().
