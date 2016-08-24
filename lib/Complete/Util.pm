@@ -54,6 +54,7 @@ _
             pos => 1,
         },
     },
+    args_as => 'array',
     result_naked => 1,
     result => {
         schema => 'hash*',
@@ -90,6 +91,7 @@ _
             pos => 0,
         },
     },
+    args_as => 'array',
     result_naked => 1,
     result => {
         schema => 'array*',
