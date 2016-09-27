@@ -475,12 +475,12 @@ for the Perl tool <prog:cpanm>, which accepts a filename (a tarball like
 `*.tar.gz`), a directory, or a module name. You can do something like this:
 
     combine_answers(
-        complete_file(word=>$word, ci=>1),
-        complete_module(word=>$word, ci=>1),
+        complete_file(word=>$word),
+        complete_module(word=>$word),
     );
 
-If a completion answer has a metadata `final` set to true, then that answer is
-used as the final answer without any combining with the other answers.
+But if a completion answer has a metadata `final` set to true, then that answer
+is used as the final answer without any combining with the other answers.
 
 _
     args => {
