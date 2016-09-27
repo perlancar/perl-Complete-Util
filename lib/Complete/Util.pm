@@ -471,8 +471,8 @@ $SPEC{combine_answers} = {
 
 This function is useful if you want to provide a completion answer that is
 gathered from multiple sources. For example, say you are providing completion
-for the Perl tool `cpanm`, which accepts a filename (a tarball like `*.tar.gz`),
-a directory, or a module name. You can do something like this:
+for the Perl tool <prog:cpanm>, which accepts a filename (a tarball like
+`*.tar.gz`), a directory, or a module name. You can do something like this:
 
     combine_answers(
         complete_file(word=>$word, ci=>1),
