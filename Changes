@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.50    2016-10-07 (PERLANCAR)
+
+	- No functional changes.
+
+        - [build] Rebuild to remove extraneous dependencies.
+
+
 0.49    2016-09-27 (PERLANCAR)
 
 	- No functional changes.
