@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.51    2016-10-14 (PERLANCAR)
+
+	- Use Text::Levenshtein::Flexible first (because it can give a
+	  speed boost by specifying maximum distance), then fallback to
+	  Text::Levenshtein::XS, then to our PP implementation.
+
+
 0.50    2016-10-07 (PERLANCAR)
 
 	- No functional changes.
