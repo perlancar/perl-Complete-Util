@@ -318,19 +318,23 @@ sub complete_array_elem {
             my $env = $ENV{COMPLETE_UTIL_LEVENSHTEIN} // '';
             if ($env eq 'xs') {
                 require Text::Levenshtein::XS;
+                $editdist_flex = 0;
                 \&Text::Levenshtein::XS::distance;
             } elsif ($env eq 'flexible') {
                 require Text::Levenshtein::Flexible;
                 $editdist_flex = 1;
                 \&Text::Levenshtein::Flexible::levenshtein_l;
             } elsif ($env eq 'pp') {
+                $editdist_flex = 0;
                 \&__editdist;
             } elsif (eval { require Text::Levenshtein::Flexible; 1 }) {
                 $editdist_flex = 1;
                 \&Text::Levenshtein::Flexible::levenshtein_l;
             } elsif (eval { require Text::Levenshtein::XS; 1 }) {
+                $editdist_flex = 0;
                 \&Text::Levenshtein::XS::distance;
             } else {
+                $editdist_flex = 0;
                 \&__editdist;
             }
         };
