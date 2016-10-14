@@ -330,9 +330,6 @@ sub complete_array_elem {
             } elsif (eval { require Text::Levenshtein::Flexible; 1 }) {
                 $editdist_flex = 1;
                 \&Text::Levenshtein::Flexible::levenshtein_l;
-            } elsif (eval { require Text::Levenshtein::XS; 1 }) {
-                $editdist_flex = 0;
-                \&Text::Levenshtein::XS::distance;
             } else {
                 $editdist_flex = 0;
                 \&__editdist;
@@ -637,10 +634,14 @@ If set to true, will display more log statements for debugging.
 
 =head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs'|'flexible')
 
-Can be used to force which Levenshtein distance implementation to use. The
-default is to use L<Text::Levenshtein::Flexible> (XS module) that performs the
-best, then fallback to L<Text::Levenshtein::XS>, then fallback to the included
-PP implementation (which is about 1-2 orders of magnitude slower).
+Can be used to force which Levenshtein distance implementation to use. C<pp>
+means the included PP implementation, which is the slowest (1-2 orders of
+magnitude slower than XS implementations), C<xs> which means
+L<Text::Levenshtein::XS>, or C<flexible> which means
+L<Text::Levenshtein::Flexible> (performs best).
+
+If this is not set, the default is to use Text::Levenshtein::Flexible when it's
+available, then fallback to the included PP implementation.
 
 
 =head1 SEE ALSO
