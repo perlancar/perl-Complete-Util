@@ -313,12 +313,21 @@ sub complete_array_elem {
     # fuzzy matching
     if ($fuzzy && !@words) {
         $log->tracef("[computil] Trying fuzzy matching ...") if $COMPLETE_UTIL_TRACE;
+        my $flex;
         $code_editdist //= do {
-            if (($ENV{COMPLETE_UTIL_LEVENSHTEIN} // '') eq 'xs') {
+            my $env = $ENV{COMPLETE_UTIL_LEVENSHTEIN} // '';
+            if ($env eq 'xs') {
                 require Text::Levenshtein::XS;
                 \&Text::Levenshtein::XS::distance;
-            } elsif (($ENV{COMPLETE_UTIL_LEVENSHTEIN} // '') eq 'pp') {
+            } elsif ($env eq 'flexible') {
+                require Text::Levenshtein::Flexible;
+                $flex = 1;
+                \&Text::Levenshtein::Flexible::levenshtein_l;
+            } elsif ($env eq 'pp') {
                 \&__editdist;
+            } elsif (eval { require Text::Levenshtein::Flexible; 1 }) {
+                $flex = 1;
+                \&Text::Levenshtein::Flexible::levenshtein_l;
             } elsif (eval { require Text::Levenshtein::XS; 1 }) {
                 \&Text::Levenshtein::XS::distance;
             } else {
@@ -330,6 +339,10 @@ sub complete_array_elem {
         my $x = -1;
         my $y = 1;
 
+        # note: we cannot use Text::Levenshtein::Flexible::levenshtein_l_all()
+        # because we perform distance calculation on the normalized array but we
+        # want to get the original array elements
+
         my %editdists;
       ELEM:
         for my $i (0..$#array) {
@@ -338,18 +351,23 @@ sub complete_array_elem {
             for my $l (length($wordn)-$y .. length($wordn)+$y) {
                 next if $l <= 0;
                 my $chopped = substr($eln, 0, $l);
-                my $d;
-                unless (defined $editdists{$chopped}) {
-                    $d = $code_editdist->($wordn, $chopped);
-                    $editdists{$chopped} = $d;
-                } else {
-                    $d = $editdists{$chopped};
-                }
                 my $maxd = __min(
                     __min(length($chopped), length($word))/$factor,
                     $fuzzy,
                 );
-                #say "D: d(".($ci ? $wordu:$word).",$chopped)=$d (maxd=$maxd)";
+                my $d;
+                unless (defined $editdists{$chopped}) {
+                    if ($flex) {
+                        $d = $code_editdist->($wordn, $chopped, $maxd);
+                        next ELEM unless defined $d;
+                    } else {
+                        $d = $code_editdist->($wordn, $chopped);
+                    }
+                    $editdists{$chopped} = $d;
+                } else {
+                    $d = $editdists{$chopped};
+                }
+                #say "D: d($word,$chopped)=$d (maxd=$maxd)";
                 next unless $d <= $maxd;
                 push @words, $array[$i];
                 next ELEM;
@@ -585,12 +603,12 @@ sub combine_answers {
 
 If set to true, will display more log statements for debugging.
 
-=head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs')
+=head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs'|'flexible')
 
-Can be used to force which levenshtein implementation to use. The default is to
-use XS version from L<Text::Levenshtein::XS> if that module is installed,
-otherwise fallback to the included PP implementation (which is about 1-2 orders
-of magnitude slower).
+Can be used to force which Levenshtein distance implementation to use. The
+default is to use L<Text::Levenshtein::Flexible> (XS module) that performs the
+best, then fallback to L<Text::Levenshtein::XS>, then fallback to the included
+PP implementation (which is about 1-2 orders of magnitude slower).
 
 
 =head1 SEE ALSO
