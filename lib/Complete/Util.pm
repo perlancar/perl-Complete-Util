@@ -114,6 +114,7 @@ sub __min(@) {
 }
 
 our $code_editdist;
+our $editdist_flex;
 
 # straight copy of Wikipedia's "Levenshtein Distance"
 sub __editdist {
@@ -313,7 +314,6 @@ sub complete_array_elem {
     # fuzzy matching
     if ($fuzzy && !@words) {
         $log->tracef("[computil] Trying fuzzy matching ...") if $COMPLETE_UTIL_TRACE;
-        my $flex;
         $code_editdist //= do {
             my $env = $ENV{COMPLETE_UTIL_LEVENSHTEIN} // '';
             if ($env eq 'xs') {
@@ -321,12 +321,12 @@ sub complete_array_elem {
                 \&Text::Levenshtein::XS::distance;
             } elsif ($env eq 'flexible') {
                 require Text::Levenshtein::Flexible;
-                $flex = 1;
+                $editdist_flex = 1;
                 \&Text::Levenshtein::Flexible::levenshtein_l;
             } elsif ($env eq 'pp') {
                 \&__editdist;
             } elsif (eval { require Text::Levenshtein::Flexible; 1 }) {
-                $flex = 1;
+                $editdist_flex = 1;
                 \&Text::Levenshtein::Flexible::levenshtein_l;
             } elsif (eval { require Text::Levenshtein::XS; 1 }) {
                 \&Text::Levenshtein::XS::distance;
@@ -357,7 +357,7 @@ sub complete_array_elem {
                 );
                 my $d;
                 unless (defined $editdists{$chopped}) {
-                    if ($flex) {
+                    if ($editdist_flex) {
                         $d = $code_editdist->($wordn, $chopped, $maxd);
                         next ELEM unless defined $d;
                     } else {
