@@ -597,6 +597,34 @@ sub combine_answers {
 =head1 DESCRIPTION
 
 
+=head1 FAQ
+
+=head2 Why is fuzzy matching slow?
+
+Example:
+
+ use Benchmark qw(timethis);
+ use Complete::Util qw(complete_array_elem);
+
+ # turn off the other non-exact matching methods
+ $Complete::Common::OPT_CI = 0;
+ $Complete::Common::OPT_WORD_MODE = 0;
+ $Complete::Common::OPT_CHAR_MODE = 0;
+
+ my @ary = ("aaa".."zzy"); # 17575 elems
+ timethis(20, sub { complete_array_elem(array=>\@ary, word=>"zzz") });
+
+results in:
+
+ timethis 20:  7 wallclock secs ( 6.82 usr +  0.00 sys =  6.82 CPU) @  2.93/s (n=20)
+
+Answer: you will need to install either L<Text::Levenshtein::Flexible> or
+L<Text::Levenshtein::XS> to speed up fuzzy matching (these modules are declared
+as optional prereqs). After Text::Levenshtein::Flexible is installed:
+
+ timethis 20:  1 wallclock secs ( 1.04 usr +  0.00 sys =  1.04 CPU) @ 19.23/s (n=20)
+
+
 =head1 ENVIRONMENT
 
 =head2 COMPLETE_UTIL_TRACE => bool
