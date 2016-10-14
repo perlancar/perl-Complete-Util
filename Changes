@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.52    2016-10-14 (PERLANCAR)
+
+	- [doc] Add FAQ item about speeding up fuzzy matching.
+
+	- [Bugfix] Remember levenshtein implementation properly.
+
+
 0.51    2016-10-14 (PERLANCAR)
 
 	- Use Text::Levenshtein::Flexible first (because it can give a
