@@ -619,9 +619,11 @@ results in:
 
  timethis 20:  7 wallclock secs ( 6.82 usr +  0.00 sys =  6.82 CPU) @  2.93/s (n=20)
 
-Answer: you will need to install either L<Text::Levenshtein::Flexible> or
-L<Text::Levenshtein::XS> to speed up fuzzy matching (these modules are declared
-as optional prereqs). After Text::Levenshtein::Flexible is installed:
+Answer: fuzzy matching is slower than exact matching due to having to calculate
+Levenshtein distance. But if you find fuzzy matching too slow using the default
+pure-perl implementation, you might want to install
+L<Text::Levenshtein::Flexible> (an optional prereq) to speed up fuzzy matching.
+After Text::Levenshtein::Flexible is installed:
 
  timethis 20:  1 wallclock secs ( 1.04 usr +  0.00 sys =  1.04 CPU) @ 19.23/s (n=20)
 
