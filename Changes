@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.53    2016-10-18 (PERLANCAR)
+
+        - No need to fallback to another XS (Text::Levenshtein::XS)
+          implementation, just try Text::Levenshtein::Flexible then fallback to
+          our PP implementation.
+
+
 0.52    2016-10-14 (PERLANCAR)
 
 	- [doc] Add FAQ item about speeding up fuzzy matching.
