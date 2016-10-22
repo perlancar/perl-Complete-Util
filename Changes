@@ -1,5 +1,11 @@
 Revision history for Complete-Util
 
+0.54    2016-10-22 (PERLANCAR)
+
+	- [dist][bugfix] Text::Levenshtein::XS accidentally added as
+	  RuntimeRequires prereq.
+
+
 0.53    2016-10-18 (PERLANCAR)
 
         - No need to fallback to another XS (Text::Levenshtein::XS)
