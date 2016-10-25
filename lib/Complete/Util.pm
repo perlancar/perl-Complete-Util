@@ -149,6 +149,8 @@ my %complete_array_elem_args = (
     array       => {
         schema => ['array*'=>{of=>'str*'}],
         req => 1,
+        pos => 1,
+        greedy => 1,
     },
     exclude     => {
         schema => ['array*'],
