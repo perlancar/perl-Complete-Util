@@ -1,5 +1,10 @@
 Revision history for Complete-Util
 
+0.55    2016-10-26 (PERLANCAR)
+
+	- complete_array_elem: Tweak Rinci metadata for CLI.
+
+
 0.54    2016-10-22 (PERLANCAR)
 
 	- [dist][bugfix] Text::Levenshtein::XS accidentally added as
