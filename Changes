@@ -1,5 +1,11 @@
 Revision history for Complete-Util
 
+0.56    2016-10-28 (PERLANCAR)
+
+	- complete_comma_sep(): Add 'remaining' option for more flexible
+	  customization of what to offer for the next element.
+
+
 0.55    2016-10-26 (PERLANCAR)
 
 	- complete_array_elem: Tweak Rinci metadata for CLI.
