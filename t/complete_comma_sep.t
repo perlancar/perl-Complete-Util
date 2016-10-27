@@ -104,6 +104,45 @@ subtest "arg:uniq" => sub {
     );
 };
 
+subtest "arg:remaining" => sub {
+    my $remaining = sub {
+        my ($seen_elems, $elems) = @_;
+
+        my %seen;
+        for (@$seen_elems) {
+            (my $nodash = $_) =~ s/^-//;
+            $seen{$nodash}++;
+        }
+
+        my @remaining;
+        for (@$elems) {
+            (my $nodash = $_) =~ s/^-//;
+            push @remaining, $_ unless $seen{$nodash};
+        }
+
+        \@remaining;
+    };
+
+    test_complete(
+        word => '',
+        elems => [qw/a -a b -b/],
+        remaining => $remaining,
+        result => [qw/-a -b a b/],
+    );
+    test_complete(
+        word => 'a,',
+        elems => [qw/a -a b -b/],
+        remaining => $remaining,
+        result => [qw/a,-b a,b/],
+    );
+    test_complete(
+        word => '-a,',
+        elems => [qw/a -a b -b/],
+        remaining => $remaining,
+        result => [qw/-a,-b -a,b/],
+    );
+};
+
 # XXX arg:exclude
 # XXX opt:ci
 # XXX opt:map_case
@@ -127,6 +166,7 @@ sub test_complete {
         replace_map=>$args{replace_map},
         uniq=>$args{uniq},
         sep=>$args{sep},
+        remaining=>$args{remaining},
     );
     is_deeply($res, $args{result}, "$name (result)")
         or diag explain($res);

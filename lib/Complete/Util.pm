@@ -425,8 +425,65 @@ my %complete_comma_sep_args = (
         default => ',',
     },
     uniq => {
-        summary => 'Whether list contains unique elements',
+        summary => 'Whether list should contain unique elements',
+        description => <<'_',
+
+When this option is set to true, if the formed list in the current word already
+contains an element, the element will not be offered again as completion answer.
+For example, if `elems` is `[1,2,3,4]` and `word` is `2,3,` then without `uniq`
+set to true the completion answer is:
+
+    2,3,1
+    2,3,2
+    2,3,3
+    2,3,4
+
+but with `uniq` set to true, the completion answer becomes:
+
+    2,3,1
+    2,3,4
+
+See also the `remaining` option for a more general mechanism of offering fewer
+elements.
+
+_
         schema => ['str*', is=>1],
+    },
+    remaining => {
+        schema => ['code*'],
+        summary => 'What elements should remain for completion',
+        description => <<'_',
+
+This is a more general mechanism if the `uniq` option does not suffice. Suppose
+you are offering completion for sorting fields. The elements are field names as
+well as field names prefixed with dash (`-`) to mean sorting with a reverse
+order. So for example `elems` is `["name","-name","age","-age"]`. When current
+word is `name`, it doesn't make sense to offer `name` nor `-name` again as the
+next sorting field. So we can set `remaining` to this code:
+
+    sub {
+        my ($seen_elems, $elems) = @_;
+
+        my %seen;
+        for (@$seen_elems) {
+            (my $nodash = $_) =~ s/^-//;
+            $seen{$nodash}++;
+        }
+
+        my @remaining;
+        for (@$elems) {
+            (my $nodash = $_) =~ s/^-//;
+            push @remaining, $_ unless $seen{$nodash};
+        }
+
+        \@remaining;
+    }
+
+As you can see above, the code is given `$seen_elems` and `$elems` as arguments
+and is expected to return remaining elements to offer.
+
+_
+        tags => ['hidden-cli'],
     },
 );
 $complete_comma_sep_args{elems} = delete $complete_comma_sep_args{array};
@@ -448,28 +505,33 @@ sub complete_comma_sep {
     my $sep       = delete $args{sep} // ',';
     my $elems     = delete $args{elems} or die "Please specify elems";
     my $uniq      = delete $args{uniq};
+    my $remaining = delete $args{remaining};
 
     my $ci = $Complete::Common::OPT_CI;
 
     my @mentioned_elems = split /\Q$sep\E/, $word, -1;
     my $cae_word = @mentioned_elems ? pop(@mentioned_elems) : '';
 
-    my @unmentioned_elems;
-    {
-        last unless $uniq;
+    my $remaining_elems;
+    if ($remaining) {
+        $remaining_elems = $remaining->(\@mentioned_elems, $elems);
+    } elsif ($uniq) {
         my %mem;
+        $remaining_elems = [];
         for (@mentioned_elems) {
             if ($ci) { $mem{lc $_}++ } else { $mem{$_}++ }
         }
         for (@$elems) {
-            push @unmentioned_elems, $_ unless ($ci ? $mem{lc $_} : $mem{$_});
+            push @$remaining_elems, $_ unless ($ci ? $mem{lc $_} : $mem{$_});
         }
+    } else {
+        $remaining_elems = $elems;
     }
 
     my $cae_res = complete_array_elem(
         %args,
         word  => $cae_word,
-        array => ($uniq ? \@unmentioned_elems : $elems),
+        array => $remaining_elems,
     );
 
     my $prefix = join($sep, @mentioned_elems);
@@ -479,7 +541,7 @@ sub complete_comma_sep {
     # add trailing comma for convenience, where appropriate
     {
         last unless @$cae_res == 1;
-        last if $uniq && @unmentioned_elems <= 1;
+        last if @$remaining_elems <= 1;
         $cae_res->[0] .= $sep;
     }
     $cae_res;
