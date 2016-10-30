@@ -208,7 +208,14 @@ sub complete_array_elem {
     my $char_mode   = $Complete::Common::OPT_CHAR_MODE;
     my $fuzzy       = $Complete::Common::OPT_FUZZY;
 
-    return [] unless @$array0;
+    $log->tracef("[computil] entering complete_array_elem(), word=<%s>", $word)
+        if $COMPLETE_UTIL_TRACE;
+
+    my $res;
+
+    unless (@$array0) {
+        $res = []; goto RETURN_RES;
+    }
 
     # normalize
     my $wordn = $ci ? uc($word) : $word; $wordn =~ s/_/-/g if $map_case;
@@ -393,7 +400,12 @@ sub complete_array_elem {
         }
     }
 
-    return $ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
+    $res =$ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
+
+  RETURN_RES:
+    $log->tracef("[computil] leaving complete_array_elem(), res=%s", $res)
+        if $COMPLETE_UTIL_TRACE;
+    $res;
 }
 
 $SPEC{complete_hash_key} = {
