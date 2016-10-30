@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
                        hashify_answer
                        arrayify_answer
                        combine_answers
+                       modify_answer
                        complete_array_elem
                        complete_hash_key
                        complete_comma_sep
@@ -666,6 +667,42 @@ sub combine_answers {
     }
 
     $encounter_hash ? $final : $final->{words};
+}
+
+$SPEC{modify_answer} = {
+    v => 1.1,
+    summary => 'Modify answer (add prefix/suffix, etc)',
+    args => {
+        answer => {
+            schema => ['any*', of=>['hash*','array*']], # XXX answer_t
+            req => 1,
+            pos => 0,
+        },
+        suffix => {
+            schema => 'str*',
+        },
+        prefix => {
+            schema => 'str*',
+        },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'undef',
+    },
+};
+sub modify_answer {
+    my %args = @_;
+
+    my $answer = $args{answer};
+    my $words = ref($answer) eq 'HASH' ? $answer->{words} : $answer;
+
+    if (defined(my $prefix = $args{prefix})) {
+        $_ = "$prefix$_" for @$words;
+    }
+    if (defined(my $suffix = $args{suffix})) {
+        $_ = "$_$suffix" for @$words;
+    }
+    undef;
 }
 
 1;
