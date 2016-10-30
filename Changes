@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.57    2016-10-30 (PERLANCAR)
+
+	- Add modify_answer().
+
+	- Add more logging (entering & leaving complete_array_elem()).
+
+
 0.56    2016-10-28 (PERLANCAR)
 
 	- complete_comma_sep(): Add 'remaining' option for more flexible
