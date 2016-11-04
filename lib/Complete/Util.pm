@@ -460,7 +460,7 @@ See also the `remaining` option for a more general mechanism of offering fewer
 elements.
 
 _
-        schema => ['str*', is=>1],
+        schema => ['bool*', is=>1],
     },
     remaining => {
         schema => ['code*'],
