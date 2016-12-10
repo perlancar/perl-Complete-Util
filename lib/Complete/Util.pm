@@ -16,6 +16,7 @@ our @EXPORT_OK = qw(
                        arrayify_answer
                        combine_answers
                        modify_answer
+                       ununiquify_answer
                        complete_array_elem
                        complete_hash_key
                        complete_comma_sep
@@ -720,6 +721,39 @@ sub modify_answer {
     }
     if (defined(my $suffix = $args{suffix})) {
         $_ = "$_$suffix" for @$words;
+    }
+    undef;
+}
+
+$SPEC{ununiquify_answer} = {
+    v => 1.1,
+    summary => 'If answer contains only one item, make it two',
+    description => <<'_',
+
+For example, if answer is `["a"]`, then will make answer become `["a","a "]`.
+This will prevent shell from automatically adding space.
+
+_
+    args => {
+        answer => {
+            schema => ['any*', of=>['hash*','array*']], # XXX answer_t
+            req => 1,
+            pos => 0,
+        },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'undef',
+    },
+};
+sub ununiquify_answer {
+    my %args = @_;
+
+    my $answer = $args{answer};
+    my $words = ref($answer) eq 'HASH' ? $answer->{words} : $answer;
+
+    if (@$words == 1) {
+        push @$words, "$words->[0] ";
     }
     undef;
 }
