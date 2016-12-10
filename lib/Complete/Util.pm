@@ -28,6 +28,25 @@ our $COMPLETE_UTIL_TRACE = $ENV{COMPLETE_UTIL_TRACE} // 0;
 $SPEC{':package'} = {
     v => 1.1,
     summary => 'General completion routine',
+    description => <<'_',
+
+This package provides some generic completion routine that follows the
+<pm:Complete> convention (if you are looking for bash/shell tab completion
+routine, take a look at the See Also section). The main routine is
+`complete_array_elem` which tries to complete a word using choices from elements
+of supplied array. For example:
+
+    complete_array_elem(word => "a", array => ["apple", "apricot", "banana"]);
+
+The routine will first try a simple substring prefix matching. If that fails,
+will try some other methods like word-mode, character-mode, or fuzzy matching.
+These methods can be disabled using settings.
+
+There are other utility routines e.g. for converting completion answer structure
+from hash to array/array to hash, combine or modify answer, etc. These routines
+are usually used by the other more specific or higher-level completion modules.
+
+_
 };
 
 $SPEC{hashify_answer} = {
