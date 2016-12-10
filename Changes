@@ -1,5 +1,12 @@
 Revision history for Complete-Util
 
+0.58    2016-12-10 (PERLANCAR)
+
+	- [doc] Add package description.
+
+	- Fix Rinci metadata: uniq is a bool.
+
+
 0.57    2016-10-30 (PERLANCAR)
 
 	- Add modify_answer().
