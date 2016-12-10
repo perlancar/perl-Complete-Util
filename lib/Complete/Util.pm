@@ -30,9 +30,9 @@ $SPEC{':package'} = {
     summary => 'General completion routine',
     description => <<'_',
 
-This package provides some generic completion routine that follows the
-<pm:Complete> convention (if you are looking for bash/shell tab completion
-routine, take a look at the See Also section). The main routine is
+This package provides some generic completion routines that follow the
+<pm:Complete> convention. (If you are looking for bash/shell tab completion
+routines, take a look at the See Also section.) The main routine is
 `complete_array_elem` which tries to complete a word using choices from elements
 of supplied array. For example:
 
