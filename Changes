@@ -1,3 +1,10 @@
+0.59    2017-07-03 (PERLANCAR)
+
+	- Add function: ununiquify_answer.
+
+	- Switch from Log::Any to Log::ger.
+
+
 0.58    2016-12-10 (PERLANCAR)
 
 	- [doc] Add package description.
