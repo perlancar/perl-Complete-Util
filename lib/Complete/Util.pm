@@ -6,7 +6,7 @@ package Complete::Util;
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any::IfLOG '$log';
+use Log::ger;
 
 use Complete::Common qw(:all);
 
@@ -229,7 +229,7 @@ sub complete_array_elem {
     my $char_mode   = $Complete::Common::OPT_CHAR_MODE;
     my $fuzzy       = $Complete::Common::OPT_FUZZY;
 
-    $log->tracef("[computil] entering complete_array_elem(), word=<%s>", $word)
+    log_trace("[computil] entering complete_array_elem(), word=<%s>", $word)
         if $COMPLETE_UTIL_TRACE;
 
     my $res;
@@ -274,7 +274,7 @@ sub complete_array_elem {
     # normal string prefix matching. we also fill @array & @arrayn here (which
     # will be used again in word-mode, fuzzy, and char-mode matching) so we
     # don't have to calculate again.
-    $log->tracef("[computil] Trying normal string-prefix matching ...") if $COMPLETE_UTIL_TRACE;
+    log_trace("[computil] Trying normal string-prefix matching ...") if $COMPLETE_UTIL_TRACE;
     for my $el (@$array0) {
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
         next if $excluden && $excluden->{$eln};
@@ -291,7 +291,7 @@ sub complete_array_elem {
             }
         }
     }
-    $log->tracef("[computil] Result from normal string-prefix matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
+    log_trace("[computil] Result from normal string-prefix matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
 
     # word-mode matching
     {
@@ -305,7 +305,7 @@ sub complete_array_elem {
             $re .= quotemeta($split_wordn[$i]).'\w*';
         }
         $re = qr/$re/;
-        $log->tracef("[computil] Trying word-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Trying word-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
 
         for my $i (0..$#array) {
             my $match;
@@ -327,23 +327,23 @@ sub complete_array_elem {
             next unless $match;
             push @words, $array[$i];
         }
-        $log->tracef("[computil] Result from word-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Result from word-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # char-mode matching
     if ($char_mode && !@words && length($wordn) && length($wordn) <= 7) {
         my $re = join(".*", map {quotemeta} split(//, $wordn));
         $re = qr/$re/;
-        $log->tracef("[computil] Trying char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Trying char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
         for my $i (0..$#array) {
             push @words, $array[$i] if $arrayn[$i] =~ $re;
         }
-        $log->tracef("[computil] Result from char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Result from char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # fuzzy matching
     if ($fuzzy && !@words) {
-        $log->tracef("[computil] Trying fuzzy matching ...") if $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Trying fuzzy matching ...") if $COMPLETE_UTIL_TRACE;
         $code_editdist //= do {
             my $env = $ENV{COMPLETE_UTIL_LEVENSHTEIN} // '';
             if ($env eq 'xs') {
@@ -404,7 +404,7 @@ sub complete_array_elem {
                 next ELEM;
             }
         }
-        $log->tracef("[computil] Result from fuzzy matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
+        log_trace("[computil] Result from fuzzy matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # replace back the words from replace_map
@@ -424,7 +424,7 @@ sub complete_array_elem {
     $res =$ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
 
   RETURN_RES:
-    $log->tracef("[computil] leaving complete_array_elem(), res=%s", $res)
+    log_trace("[computil] leaving complete_array_elem(), res=%s", $res)
         if $COMPLETE_UTIL_TRACE;
     $res;
 }
