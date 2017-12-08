@@ -201,10 +201,33 @@ $SPEC{complete_array_elem} = {
 
 Try to find completion from an array of strings. Will attempt several methods,
 from the cheapest and most discriminating to the most expensive and least
-discriminating: normal string prefix matching, word-mode matching (see
-`Complete::Common::OPT_WORD_MODE` for more details), char-mode matching (see
-`Complete::Common::OPT_CHAR_MODE` for more details), and fuzzy matching (see
-`Complete::Common::OPT_FUZZY` for more details).
+discriminating.
+
+First method is normal/exact string prefix matching (either case-sensitive or
+insensitive depending on the `$Complete::Common::OPT_CI` variable or the
+`COMPLETE_OPT_CI` environment variable). If at least one match is found, return
+result. Else, proceed to the next method.
+
+Word-mode matching (can be disabled by setting
+`$Complete::Common::OPT_WORD_MODE` or `COMPLETE_OPT_WORD_MODE` environment
+varialbe to false). Word-mode matching is described in <pm:Complete::Common>. If
+at least one match is found, return result. Else, proceed to the next method.
+
+Prefix char-mode matching (can be disabled by settings
+`$Complete::Common::OPT_CHAR_MODE` or `COMPLETE_OPT_CHAR_MODE` environment
+variable to false). Prefix char-mode matching is just like char-mode matching
+(see next paragraph) except the first character must match. If at least one
+match is found, return result. Else, proceed to the next method.
+
+Char-mode matching (can be disabled by settings
+`$Complete::Common::OPT_CHAR_MODE` or `COMPLETE_OPT_CHAR_MODE` environment
+variable to false). Char-mode matching is described in <pm:Complete::Common>. If
+at least one match is found, return result. Else, proceed to the next method.
+
+Fuzzy matching (can be disabled by setting `$Complete::Common::OPT_FUZZY` or
+`COMPLETE_OPT_FUZZY` to false). Fuzzy matching is described in
+<pm:Complete::Common>. If at least one match is found, return result. Else,
+return empty string.
 
 Will sort the resulting completion list, so you don't have to presort the array.
 
@@ -328,6 +351,17 @@ sub complete_array_elem {
             push @words, $array[$i];
         }
         log_trace("[computil] Result from word-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
+    }
+
+    # prefix char-mode matching
+    if ($char_mode && !@words && length($wordn) && length($wordn) <= 7) {
+        my $re = join(".*", map {quotemeta} split(//, $wordn));
+        $re = qr/\A$re/;
+        log_trace("[computil] Trying prefix char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
+        for my $i (0..$#array) {
+            push @words, $array[$i] if $arrayn[$i] =~ $re;
+        }
+        log_trace("[computil] Result from prefix char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
 
     # char-mode matching
