@@ -171,7 +171,10 @@ my %complete_array_elem_args = (
         schema => ['array*'=>{of=>'str*'}],
         req => 1,
         pos => 1,
-        greedy => 1,
+        slurpy => 1,
+    },
+    summaries => {
+        schema => ['array*'=>{of=>'str*'}],
     },
     exclude     => {
         schema => ['array*'],
@@ -244,6 +247,7 @@ sub complete_array_elem {
     my %args  = @_;
 
     my $array0    = $args{array} or die "Please specify array";
+    my $summaries = $args{summaries};
     my $word      = $args{word} // "";
 
     my $ci          = $Complete::Common::OPT_CI;
@@ -290,27 +294,37 @@ sub complete_array_elem {
         }
     }
 
-    my @words; # the answer
-    my @array ;  # original array + rmap entries
-    my @arrayn;  # case- & map-case-normalized form of $array + rmap entries
+    my @words;      # the answer
+    my @wordsumms;  # summaries for each item in @words
+    my @array ;     # original array + rmap entries
+    my @arrayn;     # case- & map-case-normalized form of $array + rmap entries
+    my @arraysumms; # summaries for each item in @array (or @arrayn)
 
     # normal string prefix matching. we also fill @array & @arrayn here (which
     # will be used again in word-mode, fuzzy, and char-mode matching) so we
     # don't have to calculate again.
     log_trace("[computil] Trying normal string-prefix matching ...") if $COMPLETE_UTIL_TRACE;
-    for my $el (@$array0) {
+    for my $i (0..$#{$array0}) {
+        my $el = $array0->[$i];
         my $eln = $ci ? uc($el) : $el; $eln =~ s/_/-/g if $map_case;
         next if $excluden && $excluden->{$eln};
         push @array , $el;
         push @arrayn, $eln;
-        push @words , $el if 0==index($eln, $wordn);
+        push @arraysumms, $summaries->[$i] if $summaries;
+        if (0==index($eln, $wordn)) {
+            push @words, $el;
+            push @wordsumms, $summaries->[$i] if $summaries;
+        }
         if ($rmapn && $rmapn->{$eln}) {
             for my $vn (@{ $rmapn->{$eln} }) {
                 push @array , $el;
                 push @arrayn, $vn;
                 # we add the normalized form, because we'll just revert it back
                 # to the original word in the final result
-                push @words , $vn if 0==index($vn, $wordn);
+                if (0==index($vn, $wordn)) {
+                    push @words, $vn;
+                    push @wordsumms, $summaries->[$i] if $summaries;
+                }
             }
         }
     }
@@ -349,6 +363,7 @@ sub complete_array_elem {
             }
             next unless $match;
             push @words, $array[$i];
+            push @wordsumms, $arraysumms[$i] if $summaries;
         }
         log_trace("[computil] Result from word-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
@@ -359,7 +374,10 @@ sub complete_array_elem {
         $re = qr/\A$re/;
         log_trace("[computil] Trying prefix char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
         for my $i (0..$#array) {
-            push @words, $array[$i] if $arrayn[$i] =~ $re;
+            if ($arrayn[$i] =~ $re) {
+                push @words, $array[$i];
+                push @wordsumms, $arraysumms[$i] if $summaries;
+            }
         }
         log_trace("[computil] Result from prefix char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
@@ -370,7 +388,10 @@ sub complete_array_elem {
         $re = qr/$re/;
         log_trace("[computil] Trying char-mode matching (re=%s) ...", $re) if $COMPLETE_UTIL_TRACE;
         for my $i (0..$#array) {
-            push @words, $array[$i] if $arrayn[$i] =~ $re;
+            if ($arrayn[$i] =~ $re) {
+                push @words, $array[$i];
+                push @wordsumms, $arraysumms[$i] if $summaries;
+            }
         }
         log_trace("[computil] Result from char-mode matching: %s", \@words) if @words && $COMPLETE_UTIL_TRACE;
     }
@@ -435,6 +456,7 @@ sub complete_array_elem {
                 #say "D: d($word,$chopped)=$d (maxd=$maxd)";
                 next unless $d <= $maxd;
                 push @words, $array[$i];
+                push @wordsumms, $arraysumms[$i] if $summaries;
                 next ELEM;
             }
         }
@@ -455,7 +477,19 @@ sub complete_array_elem {
         }
     }
 
-    $res =$ci ? [sort {lc($a) cmp lc($b)} @words] : [sort @words];
+    # sort results and insert summaries
+    $res = [
+        map {
+            $summaries ?
+                {word=>$words[$_], summary=>$wordsumms[$_]} :
+                $words[$_]
+            }
+            sort {
+                $ci ?
+                    lc($words[$a]) cmp lc($words[$b]) :
+                    $words[$a]     cmp $words[$b] }
+            0 .. $#words
+        ];
 
   RETURN_RES:
     log_trace("[computil] leaving complete_array_elem(), res=%s", $res)
@@ -469,6 +503,7 @@ $SPEC{complete_hash_key} = {
     args => {
         %arg_word,
         hash      => { schema=>['hash*'=>{}], req=>1 },
+        summaries => { schema=>['hash*'=>{}] },
     },
     result_naked => 1,
     result => {
@@ -479,9 +514,15 @@ sub complete_hash_key {
     my %args  = @_;
     my $hash      = $args{hash} or die "Please specify hash";
     my $word      = $args{word} // "";
+    my $summaries = $args{summaries};
+
+    my @keys = keys %$hash;
+    my @summaries;
+    if ($summaries) { for (@keys) { push @summaries, $summaries->{$_} } }
 
     complete_array_elem(
-        word=>$word, array=>[sort keys %$hash],
+        word=>$word, array=>\@keys,
+        (summaries=>\@summaries) x !!$summaries,
     );
 }
 
