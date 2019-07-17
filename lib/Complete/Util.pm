@@ -504,10 +504,14 @@ $SPEC{complete_hash_key} = {
         %arg_word,
         hash      => { schema=>['hash*'=>{}], req=>1 },
         summaries => { schema=>['hash*'=>{}] },
+        summaries_from_hash_values => { schema=>'true*' },
     },
     result_naked => 1,
     result => {
         schema => 'array',
+    },
+    args_rels => {
+        choose_one => ['summaries', 'summaries_from_hash_values'],
     },
 };
 sub complete_hash_key {
@@ -515,14 +519,22 @@ sub complete_hash_key {
     my $hash      = $args{hash} or die "Please specify hash";
     my $word      = $args{word} // "";
     my $summaries = $args{summaries};
+    my $summaries_from_hash_values = $args{summaries_from_hash_values};
 
     my @keys = keys %$hash;
     my @summaries;
-    if ($summaries) { for (@keys) { push @summaries, $summaries->{$_} } }
+    my $has_summary;
+    if ($summaries) {
+        $has_summary++;
+        for (@keys) { push @summaries, $summaries->{$_} }
+    } elsif ($summaries_from_hash_values) {
+        $has_summary++;
+        for (@keys) { push @summaries, $hash->{$_} }
+    }
 
     complete_array_elem(
         word=>$word, array=>\@keys,
-        (summaries=>\@summaries) x !!$summaries,
+        (summaries=>\@summaries) x !!$has_summary,
     );
 }
 
