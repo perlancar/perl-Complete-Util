@@ -1,3 +1,8 @@
+0.602   2019-07-18  Released-By: PERLANCAR; Urgency: medium
+
+	- complete_hash_key(): Add argument summaries_from_hash_values.
+
+
 0.601   2019-06-25  Released-By: PERLANCAR
 
 	- Add argument 'summaries' to complete_array_elem() and
