@@ -763,16 +763,6 @@ sub combine_answers {
         }
     }
 
-    # re-sort final words
-    if ($final->{words}) {
-        $final->{words} = [
-            sort {
-                (ref($a) ? $a->{word} : $a) cmp
-                    (ref($b) ? $b->{word} : $b);
-            }
-                @{ $final->{words} }];
-    }
-
     $encounter_hash ? $final : $final->{words};
 }
 
