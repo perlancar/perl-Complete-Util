@@ -891,8 +891,6 @@ available, then fallback to the included PP implementation.
 
 =head1 SEE ALSO
 
-L<Complete::Tree>
-
 L<Complete>
 
 If you want to do bash tab completion with Perl, take a look at
