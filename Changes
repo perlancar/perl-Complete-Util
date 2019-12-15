@@ -1,3 +1,10 @@
+0.605   2019-12-15  Released-By: PERLANCAR; Urgency: medium
+
+	- [doc] Remove Complete::Tree from mention (now becomes
+	  Complete::Sequence, but just like Complete::Path this is not
+	  directly related to Complete::Util anyway).
+
+
 0.604   2019-12-15  Released-By: PERLANCAR; Urgency: low
 
 	- No functional changes.
