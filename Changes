@@ -1,3 +1,10 @@
+0.604   2019-12-15  Released-By: PERLANCAR; Urgency: low
+
+	- No functional changes.
+
+	- [doc] Mention Complete::Tree.
+
+
 0.603   2019-07-23  Released-By: PERLANCAR; Urgency: medium
 
 	- [incompatible change] combine_answers() no longer re-sorts
