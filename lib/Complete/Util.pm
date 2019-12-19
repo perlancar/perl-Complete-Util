@@ -1,6 +1,8 @@
 package Complete::Util;
 
+# AUTHORITY
 # DATE
+# DIST
 # VERSION
 
 use 5.010001;
@@ -873,9 +875,10 @@ After Text::Levenshtein::Flexible is installed:
 
 =head1 ENVIRONMENT
 
-=head2 COMPLETE_UTIL_TRACE => bool
+=head2 COMPLETE_UTIL_TRACE
 
-If set to true, will display more log statements for debugging.
+Bool. If set to true, will generate more log statements for debugging (at the
+trace level).
 
 =head2 COMPLETE_UTIL_LEVENSHTEIN => str ('pp'|'xs'|'flexible')
 
