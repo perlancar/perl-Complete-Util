@@ -796,12 +796,24 @@ sub modify_answer {
     my $words = ref($answer) eq 'HASH' ? $answer->{words} : $answer;
 
     if (defined(my $prefix = $args{prefix})) {
-        $_ = "$prefix$_" for @$words;
+        for (@$words) {
+            if (ref $_ eq 'HASH') {
+                $_->{word} = "$prefix$_->{word}";
+            } else {
+                $_ = "$prefix$_";
+            }
+        }
     }
     if (defined(my $suffix = $args{suffix})) {
-        $_ = "$_$suffix" for @$words;
+        for (@$words) {
+            if (ref $_ eq 'HASH') {
+                $_->{word} = "$_->{word}$suffix";
+            } else {
+                $_ = "$_$suffix";
+            }
+        }
     }
-    undef;
+    $answer;
 }
 
 $SPEC{ununiquify_answer} = {
