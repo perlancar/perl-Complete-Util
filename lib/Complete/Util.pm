@@ -19,6 +19,8 @@ our @EXPORT_OK = qw(
                        combine_answers
                        modify_answer
                        ununiquify_answer
+                       answer_has_entries
+                       answer_num_entries
                        complete_array_elem
                        complete_hash_key
                        complete_comma_sep
@@ -27,6 +29,15 @@ our @EXPORT_OK = qw(
 our %SPEC;
 
 our $COMPLETE_UTIL_TRACE = $ENV{COMPLETE_UTIL_TRACE} // 0;
+
+our %arg0_answer = (
+    answer => {
+        summary => 'Completion answer structure',
+        schema  => ['any*' => of => ['array*','hash*']],
+        req => 1,
+        pos => 0,
+    },
+);
 
 $SPEC{':package'} = {
     v => 1.1,
@@ -65,12 +76,7 @@ Then will add keys from `meta` to the hash.
 
 _
     args => {
-        arg => {
-            summary => '',
-            schema  => ['any*' => of => ['array*','hash*']],
-            req => 1,
-            pos => 0,
-        },
+        %arg0_answer,
         meta => {
             summary => 'Metadata (extra keys) for the hash',
             schema  => 'hash*',
@@ -107,12 +113,7 @@ receives a hash, will return its `words` key.
 
 _
     args => {
-        arg => {
-            summary => '',
-            schema  => ['any*' => of => ['array*','hash*']],
-            req => 1,
-            pos => 0,
-        },
+        %arg0_answer,
     },
     args_as => 'array',
     result_naked => 1,
@@ -126,6 +127,54 @@ sub arrayify_answer {
         $ans = $ans->{words};
     }
     $ans;
+}
+
+$SPEC{answer_num_entries} = {
+    v => 1.1,
+    summary => 'Get the number of entries in an answer',
+    description => <<'_',
+
+It is equivalent to:
+
+    ref $answer eq 'ARRAY' ? (@$answer // 0) : (@{$answer->{words}} // 0);
+
+_
+    args => {
+        %arg0_answer,
+    },
+    args_as => 'array',
+    result_naked => 1,
+    result => {
+        schema => 'int*',
+    },
+};
+sub answer_num_entries {
+    my $ans = shift;
+    return ref($ans) eq 'HASH' ? (@{$ans->{words} // []} // 0) : (@$ans // 0);
+}
+
+$SPEC{answer_has_entries} = {
+    v => 1.1,
+    summary => 'Check if answer has entries',
+    description => <<'_',
+
+It is equivalent to:
+
+    ref $answer eq 'ARRAY' ? (@$answer ? 1:0) : (@{$answer->{words}} ? 1:0);
+
+_
+    args => {
+        %arg0_answer,
+    },
+    args_as => 'array',
+    result_naked => 1,
+    result => {
+        schema => 'int*',
+    },
+};
+sub answer_has_entries {
+    my $ans = shift;
+    return ref($ans) eq 'HASH' ? (@{$ans->{words} // []} ? 1:0) : (@$ans ? 1:0);
 }
 
 sub __min(@) {
