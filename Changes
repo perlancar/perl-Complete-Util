@@ -335,7 +335,7 @@
 	- Add tests for map_case and exp_im_path.
 
 
-0.19    2014-12-25 (PERLANCAR) - ♪ the magic of christmas day
+0.19    2014-12-25  Released-By: PERLANCAR; Note: ♪ the magic of christmas day
 
 	- Extracted most functionality of complete_file() to Complete-Path, to
           make the code reusable for other modules e.g. Complete-Module and
@@ -485,3 +485,4 @@
 
         - First release. Split from Perinci-BashComplete because the routines
           are general and not tied to Perinci/Rinci.
+
