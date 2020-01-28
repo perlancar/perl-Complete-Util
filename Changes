@@ -1,3 +1,11 @@
+0.610   2020-01-28  Released-By: PERLANCAR; Urgency: low
+
+        - No functional changes.
+
+        - [build] [doc] Rebuild to actually hide ununiquify_answer
+          (Perinci::To::POD 0.868 observes 'hidden' tag).
+
+
 0.609   2020-01-28  Released-By: PERLANCAR; Urgency: medium
 
 	- complete_comma_sep: Don't use ununiquify_answer to prevent space being

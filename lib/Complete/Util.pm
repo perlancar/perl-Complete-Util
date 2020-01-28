@@ -902,6 +902,8 @@ sub ununiquify_answer {
 1;
 # ABSTRACT:
 
+=for Pod::Coverage ^(ununiquify_answer)$
+
 =head1 DESCRIPTION
 
 
