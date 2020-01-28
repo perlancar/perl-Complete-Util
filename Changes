@@ -1,3 +1,11 @@
+0.611   2020-01-28  Released-By: PERLANCAR; Urgency: medium
+
+        - No functional changes.
+
+        - [build] [doc] Rebuild with Perinci::To::POD 0.869 to fix rendering
+          error.
+
+
 0.610   2020-01-28  Released-By: PERLANCAR; Urgency: low
 
         - No functional changes.
