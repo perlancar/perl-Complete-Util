@@ -6,7 +6,9 @@
           error.
 
 
-0.610   2020-01-28  Released-By: PERLANCAR; Urgency: low
+0.610   2020-01-28  Released-By: PERLANCAR; Urgency: low; Broken: yes
+
+        - Update: this release's doc is broken.
 
         - No functional changes.
 
