@@ -1,3 +1,13 @@
+0.609   2020-01-28  Released-By: PERLANCAR; Urgency: medium
+
+	- complete_comma_sep: Don't use ununiquify_answer to prevent space being
+	  added; instead, use the is_partial property as it is more proper. We
+	  need Complete::Bash 0.334 to properly render this though.
+
+	- Mark the ununiquify_answer function as hidden, as it is now
+	  unused.
+
+
 0.608   2020-01-13  Released-By: PERLANCAR; Urgency: medium
 
 	- Add functions: answer_has_entries, answer_num_entries.
@@ -485,4 +495,3 @@
 
         - First release. Split from Perinci-BashComplete because the routines
           are general and not tied to Perinci/Rinci.
-
