@@ -713,8 +713,7 @@ sub complete_comma_sep {
     {
         last unless @$cae_res == 1;
         last if @$remaining_elems <= 1;
-        $cae_res->[0] .= $sep;
-        ununiquify_answer(answer => $cae_res);
+        $cae_res = [{word=>"$cae_res->[0]$sep", is_partial=>1}];
     }
     $cae_res;
 }
