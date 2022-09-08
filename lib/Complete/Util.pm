@@ -181,7 +181,7 @@ sub answer_has_entries {
     return ref($ans) eq 'HASH' ? (@{$ans->{words} // []} ? 1:0) : (@$ans ? 1:0);
 }
 
-sub __min(@) {
+sub __min(@) { ## no critic: Subroutines::ProhibitSubroutinePrototypes
     my $m = $_[0];
     for (@_) {
         $m = $_ if $_ < $m;
@@ -770,7 +770,7 @@ _
 sub combine_answers {
     require List::Util;
 
-    return undef unless @_;
+    return unless @_;
     return $_[0] if @_ < 2;
 
     my $final = {words=>[]};

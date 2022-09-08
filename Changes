@@ -1,3 +1,11 @@
+0.612   2022-09-08  Released-By: PERLANCAR; Urgency: medium
+
+        - Handle undef answer in hashify_answer, arrayify_answer,
+          answer_has_entries, answer_num_entries.
+
+        - [test] combine_answers(): Add test input (undef).
+
+
 0.611   2020-01-28  Released-By: PERLANCAR; Urgency: medium
 
         - No functional changes.
