@@ -1,18 +1,18 @@
 package Complete::Util;
 
-# AUTHORITY
-# DATE
-# DIST
-# VERSION
-
 use 5.010001;
 use strict;
 use warnings;
 use Log::ger;
 
 use Complete::Common qw(:all);
-
 use Exporter qw(import);
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
+
 our @EXPORT_OK = qw(
                        hashify_answer
                        arrayify_answer
@@ -91,6 +91,7 @@ _
 };
 sub hashify_answer {
     my $ans = shift;
+    return unless defined $ans;
     if (ref($ans) ne 'HASH') {
         $ans = {words=>$ans};
     }
@@ -123,6 +124,7 @@ _
 };
 sub arrayify_answer {
     my $ans = shift;
+    return unless defined $ans;
     if (ref($ans) eq 'HASH') {
         $ans = $ans->{words};
     }
@@ -150,6 +152,7 @@ _
 };
 sub answer_num_entries {
     my $ans = shift;
+    return unless defined $ans;
     return ref($ans) eq 'HASH' ? (@{$ans->{words} // []} // 0) : (@$ans // 0);
 }
 
@@ -174,6 +177,7 @@ _
 };
 sub answer_has_entries {
     my $ans = shift;
+    return unless defined $ans;
     return ref($ans) eq 'HASH' ? (@{$ans->{words} // []} ? 1:0) : (@$ans ? 1:0);
 }
 
