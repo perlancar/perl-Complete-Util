@@ -735,7 +735,8 @@ sub complete_comma_sep {
     {
         last unless @$cae_res == 1;
         last if @$remaining_elems <= 1;
-        $cae_res = [{word=>"$cae_res->[0]$sep", is_partial=>1}];
+        $cae_res = [{word=>$cae_res->[0]}] unless ref $cae_res->[0] eq 'HASH';
+        $cae_res = [{word=>"$cae_res->[0]{word}$sep", summary=>$cae_res->[0]{summary}, is_partial=>1}];
     }
     $cae_res;
 }
