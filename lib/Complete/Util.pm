@@ -679,13 +679,30 @@ sub complete_comma_sep {
     my $word      = delete $args{word} // "";
     my $sep       = delete $args{sep} // ',';
     my $elems     = delete $args{elems} or die "Please specify elems";
+    my $summaries = delete $args{summaries};
     my $uniq      = delete $args{uniq};
     my $remaining = delete $args{remaining};
 
     my $ci = $Complete::Common::OPT_CI;
 
+    my %summaries_for; # key=elem val=summary
+  GEN_SUMMARIES_HASH:
+    {
+        last unless $summaries;
+        for my $i (0 .. $#{$elems}) {
+            my $elem0 = $elems->[$i];
+            my $summary = $summaries->[$i];
+            my $elem = $ci ? lc($elem0) : $elem0;
+            if (exists $summaries_for{$elem}) {
+                log_warn "Non-unique value '$elem', using only the first summary for it";
+                next;
+            }
+            $summaries_for{$elem} = $summary;
+        }
+    } # GEN_SUMMARIES_HASH
+
     my @mentioned_elems = split /\Q$sep\E/, $word, -1;
-    my $cae_word = @mentioned_elems ? pop(@mentioned_elems) : '';
+    my $cae_word = @mentioned_elems ? pop(@mentioned_elems) : ''; # cae=complete_array_elem
 
     my $remaining_elems;
     if ($remaining) {
@@ -707,11 +724,12 @@ sub complete_comma_sep {
         %args,
         word  => $cae_word,
         array => $remaining_elems,
+        ($summaries ? (summaries=>[map {$summaries_for{ $ci ? lc($_):$_ }} @$remaining_elems]) : ()),
     );
 
     my $prefix = join($sep, @mentioned_elems);
     $prefix .= $sep if @mentioned_elems;
-    $cae_res = [map { "$prefix$_" } @$cae_res];
+    $cae_res = [map { ref $_ eq 'HASH' ? { %$_, word=>"$prefix$_->{word}" } : "$prefix$_" } @$cae_res];
 
     # add trailing comma for convenience, where appropriate
     {
