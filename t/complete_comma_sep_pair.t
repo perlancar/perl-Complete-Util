@@ -28,7 +28,7 @@ subtest "completing keys" => sub {
     test_complete(
         word           => 'b,v,',
         keys           => [qw(a aa b)],
-        result         => [qw(b,v,a b,v,aa)],
+        result         => ['b,v,a', 'b,v,aa'],
     );
     test_complete(
         word           => 'aa',
@@ -52,13 +52,13 @@ subtest "completing values" => sub {
         word           => 'a,',
         keys           => [qw(a aa b)],
         complete_value => sub { [qw/v1 v2/] },
-        result         => [qw/a,v1 a,v2/],
+        result         => ['a,v1', 'a,v2'],
     );
     test_complete(
         word           => 'a,v,b,',
         keys           => [qw(a aa b)],
         complete_value => sub { [qw/v1 v2/] },
-        result         => [qw/a,v,b,v1 a,v,b,v2/],
+        result         => ['a,v,b,v1', 'a,v,b,v2'],
     );
 };
 
