@@ -898,8 +898,11 @@ sub complete_comma_sep_pair {
         # we should be completing values
 
         return [] unless $complete_value;
-        return $complete_value->(word=>$mentioned_elems[-1], key=>$mentioned_keys[-1]);
-
+        my $word = pop @mentioned_elems;
+        my $res = $complete_value->(word=>$word, key=>$mentioned_keys[-1]);
+        my $prefix = join($sep, @mentioned_elems);
+        $prefix .= $sep if @mentioned_elems;
+        modify_answer(answer=>$res, prefix=>$prefix);
     }
 }
 
