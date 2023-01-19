@@ -1,5 +1,7 @@
 0.617   2023-01-19  Released-By: PERLANCAR; Urgency: low
 
+        - No functional changes.
+
         - [test] Avoid perl warning about comma in qw(), in test script.
 
 
