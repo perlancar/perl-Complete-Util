@@ -1,3 +1,8 @@
+0.617   2023-01-19  Released-By: PERLANCAR; Urgency: low
+
+        - [test] Avoid perl warning about comma in qw(), in test script.
+
+
 0.616   2023-01-19  Released-By: PERLANCAR; Urgency: medium
 
         - [bugfix][func complete_comma_sep_pair] When completing value, we
