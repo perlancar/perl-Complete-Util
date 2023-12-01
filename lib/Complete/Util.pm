@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(
                        answer_num_entries
                        complete_array_elem
                        complete_hash_key
+                       complete_hash_value
                        complete_comma_sep
                        complete_comma_sep_pair
                );
@@ -596,6 +597,51 @@ sub complete_hash_key {
 
     complete_array_elem(
         word=>$word, array=>\@keys,
+        (summaries=>\@summaries) x !!$has_summary,
+    );
+}
+
+
+$SPEC{complete_hash_value} = {
+    v => 1.1,
+    summary => 'Complete from hash values',
+    args => {
+        %arg_word,
+        hash      => { schema=>['hash*'=>{}], req=>1 },
+        summaries => { schema=>['hash*'=>{}] },
+        summaries_from_hash_keys => { schema=>'true*' },
+    },
+    result_naked => 1,
+    result => {
+        schema => 'array',
+    },
+    args_rels => {
+        choose_one => ['summaries', 'summaries_from_hash_keys'],
+    },
+};
+sub complete_hash_value {
+    my %args  = @_;
+    my $hash      = delete $args{hash} or die "Please specify hash";
+    my $word      = delete($args{word}) // "";
+    my $summaries = delete $args{summaries};
+    my $summaries_from_hash_keys = delete $args{summaries_from_hash_keys};
+    die "complete_hash_values(): Unknown argument(s): ".join(", ", keys %args)
+        if keys %args;
+
+    my @keys   = keys %$hash;
+    my @values = map { "$hash->{$_}" } @keys;
+    my @summaries;
+    my $has_summary;
+    if ($summaries) {
+        $has_summary++;
+        for (@values) { push @summaries, $summaries->{$_} }
+    } elsif ($summaries_from_hash_keys) {
+        $has_summary++;
+        @summaries = @keys;
+    }
+
+    complete_array_elem(
+        word=>$word, array=>\@values,
         (summaries=>\@summaries) x !!$has_summary,
     );
 }
