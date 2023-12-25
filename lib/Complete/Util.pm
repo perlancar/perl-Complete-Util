@@ -133,6 +133,70 @@ sub arrayify_answer {
     $ans;
 }
 
+$SPEC{get_answer_words} = {
+    v => 1.1,
+    summary => 'Extract just the words from answer structure',
+    description => <<'_',
+
+This routine accepts a hash or an array answer structure. It then returns an
+arrayref containing just the words from each answer entry. If the answer is
+undef, it returns an empty arrayref.
+
+See also: `get_answer_summaries()`.
+
+_
+    args => {
+        %arg0_answer,
+    },
+    args_as => 'array',
+    result_naked => 1,
+    result => {
+        schema => 'array*',
+    },
+};
+sub get_answer_words {
+    my $ans = shift;
+    return [] defined $ans;
+    if (ref($ans) eq 'HASH') {
+        $ans = $ans->{words};
+    }
+    my @words;
+    for (@$ans) { push @words, ref($_) eq 'HASH' ? $_->{word} : $_ }
+    \@words;
+}
+
+$SPEC{get_answer_summaries} = {
+    v => 1.1,
+    summary => 'Extract just the entry summaries from answer structure',
+    description => <<'_',
+
+This routine accepts a hash or an array answer structure. It then returns an
+arrayref containing just the summaries from each answer entry. If the answer is
+undef, it returns an empty arrayref.
+
+See also: `get_answer_words()`.
+
+_
+    args => {
+        %arg0_answer,
+    },
+    args_as => 'array',
+    result_naked => 1,
+    result => {
+        schema => 'array*',
+    },
+};
+sub get_answer_words {
+    my $ans = shift;
+    return [] defined $ans;
+    if (ref($ans) eq 'HASH') {
+        $ans = $ans->{words};
+    }
+    my @summaries;
+    for (@$ans) { push @summaries, ref($_) eq 'HASH' ? $_->{summary} : $_ }
+    \@summaries;
+}
+
 $SPEC{answer_num_entries} = {
     v => 1.1,
     summary => 'Get the number of entries in an answer',
