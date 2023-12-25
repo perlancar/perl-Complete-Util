@@ -156,7 +156,7 @@ _
 };
 sub get_answer_words {
     my $ans = shift;
-    return [] defined $ans;
+    return [] unless defined $ans;
     if (ref($ans) eq 'HASH') {
         $ans = $ans->{words};
     }
@@ -188,7 +188,7 @@ _
 };
 sub get_answer_words {
     my $ans = shift;
-    return [] defined $ans;
+    return [] unless defined $ans;
     if (ref($ans) eq 'HASH') {
         $ans = $ans->{words};
     }
