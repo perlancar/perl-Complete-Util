@@ -26,6 +26,8 @@ our @EXPORT_OK = qw(
                        complete_hash_value
                        complete_comma_sep
                        complete_comma_sep_pair
+                       get_answer_words
+                       get_answer_summaries
                );
 
 our %SPEC;
@@ -186,14 +188,14 @@ _
         schema => 'array*',
     },
 };
-sub get_answer_words {
+sub get_answer_summaries {
     my $ans = shift;
     return [] unless defined $ans;
     if (ref($ans) eq 'HASH') {
         $ans = $ans->{words};
     }
     my @summaries;
-    for (@$ans) { push @summaries, ref($_) eq 'HASH' ? $_->{summary} : $_ }
+    for (@$ans) { push @summaries, ref($_) eq 'HASH' ? $_->{summary} : undef }
     \@summaries;
 }
 
