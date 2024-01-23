@@ -890,6 +890,7 @@ to return a completion answer.
 _
         },
         uniq => {
+            summary => 'If set to true, then do not offer key that has been mentioned before in the word',
             schema => 'bool*',
             default => 1,
         },
