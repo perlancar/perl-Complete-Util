@@ -1190,7 +1190,6 @@ _
     result => {
         schema => 'undef',
     },
-    tags => ['hidden'],
 };
 sub ununiquify_answer {
     my %args = @_;
