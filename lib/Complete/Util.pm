@@ -50,7 +50,7 @@ $SPEC{':package'} = {
 
 This package provides some generic completion routines that follow the
 <pm:Complete> convention. (If you are looking for bash/shell tab completion
-routines, take a look at the See Also section.) The main routine is
+routines, take a look at L</"SEE ALSO">.) The main routine is
 `complete_array_elem` which tries to complete a word using choices from elements
 of supplied array. For example:
 
