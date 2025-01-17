@@ -46,7 +46,7 @@ our %arg0_answer = (
 $SPEC{':package'} = {
     v => 1.1,
     summary => 'General completion routine',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This package provides some generic completion routines that follow the
 <pm:Complete> convention. (If you are looking for bash/shell tab completion
@@ -64,13 +64,13 @@ There are other utility routines e.g. for converting completion answer structure
 from hash to array/array to hash, combine or modify answer, etc. These routines
 are usually used by the other more specific or higher-level completion modules.
 
-_
+MARKDOWN
 };
 
 $SPEC{hashify_answer} = {
     v => 1.1,
     summary => 'Make sure we return completion answer in hash form',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This function accepts a hash or an array. If it receives an array, will convert
 the array into `{words=>$ary}' first to make sure the completion answer is in
@@ -78,7 +78,7 @@ hash form.
 
 Then will add keys from `meta` to the hash.
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
         meta => {
@@ -111,12 +111,12 @@ sub hashify_answer {
 $SPEC{arrayify_answer} = {
     v => 1.1,
     summary => 'Make sure we return completion answer in array form',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This is the reverse of `hashify_answer`. It accepts a hash or an array. If it
 receives a hash, will return its `words` key.
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
     },
@@ -138,7 +138,7 @@ sub arrayify_answer {
 $SPEC{get_answer_words} = {
     v => 1.1,
     summary => 'Extract just the words from answer structure',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This routine accepts a hash or an array answer structure. It then returns an
 arrayref containing just the words from each answer entry. If the answer is
@@ -146,7 +146,7 @@ undef, it returns an empty arrayref.
 
 See also: `get_answer_summaries()`.
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
     },
@@ -170,7 +170,7 @@ sub get_answer_words {
 $SPEC{get_answer_summaries} = {
     v => 1.1,
     summary => 'Extract just the entry summaries from answer structure',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This routine accepts a hash or an array answer structure. It then returns an
 arrayref containing just the summaries from each answer entry. If the answer is
@@ -178,7 +178,7 @@ undef, it returns an empty arrayref.
 
 See also: `get_answer_words()`.
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
     },
@@ -202,13 +202,13 @@ sub get_answer_summaries {
 $SPEC{answer_num_entries} = {
     v => 1.1,
     summary => 'Get the number of entries in an answer',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 It is equivalent to:
 
     ref $answer eq 'ARRAY' ? (@$answer // 0) : (@{$answer->{words}} // 0);
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
     },
@@ -227,13 +227,13 @@ sub answer_num_entries {
 $SPEC{answer_has_entries} = {
     v => 1.1,
     summary => 'Check if answer has entries',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 It is equivalent to:
 
     ref $answer eq 'ARRAY' ? (@$answer ? 1:0) : (@{$answer->{words}} ? 1:0);
 
-_
+MARKDOWN
     args => {
         %arg0_answer,
     },
@@ -304,7 +304,7 @@ my %complete_array_elem_args = (
     },
     replace_map => {
         schema => ['hash*', each_value=>['array*', of=>'str*']],
-        description => <<'_',
+        description => <<'MARKDOWN',
 
 You can supply correction entries in this option. An example is when array if
 `['mount','unmount']` and `umount` is a popular "typo" for `unmount`. When
@@ -315,7 +315,7 @@ One solution is to add replace_map `{'unmount'=>['umount']}`. This way, `umount`
 will be regarded the same as `unmount` and when user types `um` it can be
 completed unambiguously into `unmount`.
 
-_
+MARKDOWN
         tags => ['experimental'],
     },
 );
@@ -323,7 +323,7 @@ _
 $SPEC{complete_array_elem} = {
     v => 1.1,
     summary => 'Complete from array',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 Try to find completion from an array of strings. Will attempt several methods,
 from the cheapest and most discriminating to the most expensive and least
@@ -357,7 +357,7 @@ return empty string.
 
 Will sort the resulting completion list, so you don't have to presort the array.
 
-_
+MARKDOWN
     args => {
         %complete_array_elem_args,
     },
@@ -720,7 +720,7 @@ my %complete_comma_sep_args = (
     },
     uniq => {
         summary => 'Whether list should contain unique elements',
-        description => <<'_',
+        description => <<'MARKDOWN',
 
 When this option is set to true, if the formed list in the current word already
 contains an element, the element will not be offered again as completion answer.
@@ -740,13 +740,13 @@ but with `uniq` set to true, the completion answer becomes:
 See also the `remaining` option for a more general mechanism of offering fewer
 elements.
 
-_
+MARKDOWN
         schema => ['bool*', is=>1],
     },
     remaining => {
         schema => ['code*'],
         summary => 'What elements should remain for completion',
-        description => <<'_',
+        description => <<'MARKDOWN',
 
 This is a more general mechanism if the `uniq` option does not suffice. Suppose
 you are offering completion for sorting fields. The elements are field names as
@@ -776,7 +776,7 @@ next sorting field. So we can set `remaining` to this code:
 As you can see above, the code is given `$seen_elems` and `$elems` as arguments
 and is expected to return remaining elements to offer.
 
-_
+MARKDOWN
         tags => ['hidden-cli'],
     },
 );
@@ -881,13 +881,13 @@ $SPEC{complete_comma_sep_pair} = {
         complete_value => {
             summary => 'Code to supply possible values for a key',
             schema => 'code*',
-            description => <<'_',
+            description => <<'MARKDOWN',
 
 Code should accept hash arguments and will be given the arguments `word` (word
 that is part of the value), and `key` (the key being evaluated) and is expected
 to return a completion answer.
 
-_
+MARKDOWN
         },
         uniq => {
             summary => 'If set to true, then do not offer key that has been mentioned before in the word',
@@ -897,7 +897,7 @@ _
         remaining_keys => {
             schema => ['code*'],
             summary => 'What keys should remain for completion',
-            description => <<'_',
+            description => <<'MARKDOWN',
 
 This is a more general mechanism if the `uniq` option does not suffice. Suppose
 you are offering completion for arguments. Possible arguments are `foo`, `bar`,
@@ -921,8 +921,7 @@ you are offering completion for arguments. Possible arguments are `foo`, `bar`,
 As you can see above, the code is given `$seen_elems` and `$elems` as arguments
 and is expected to return remaining elements to offer.
 
-
-_
+MARKDOWN
         },
     },
     result_naked => 1,
@@ -1022,7 +1021,7 @@ sub complete_comma_sep_pair {
 $SPEC{combine_answers} = {
     v => 1.1,
     summary => 'Given two or more answers, combine them into one',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This function is useful if you want to provide a completion answer that is
 gathered from multiple sources. For example, say you are providing completion
@@ -1037,7 +1036,7 @@ for the Perl tool <prog:cpanm>, which accepts a filename (a tarball like
 But if a completion answer has a metadata `final` set to true, then that answer
 is used as the final answer without any combining with the other answers.
 
-_
+MARKDOWN
     args => {
         answers => {
             schema => [
@@ -1173,12 +1172,12 @@ sub modify_answer {
 $SPEC{ununiquify_answer} = {
     v => 1.1,
     summary => 'If answer contains only one item, make it two',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 For example, if answer is `["a"]`, then will make answer become `["a","a "]`.
 This will prevent shell from automatically adding space.
 
-_
+MARKDOWN
     args => {
         answer => {
             schema => ['any*', of=>['hash*','array*']], # XXX answer_t
